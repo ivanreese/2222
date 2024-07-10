@@ -6,7 +6,8 @@ for people who like to be silly
 
 and know a tiny bit of programming.
 
-<iframe src="https://www.youtube-nocookie.com/embed/ZstE5y6nKSU?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
+[![Watch the video](https://img.youtube.com/vi/ZstE5y6nKSU/hqdefault.jpg)](https://www.youtube.com/embed/ZstE5y6nKSU)
+
 
 ### How to play
 
