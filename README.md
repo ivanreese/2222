@@ -31,7 +31,7 @@ Your program should:
 
 You can spend as long as you like implementing the game, but I suggest speedrunning this part! Just make it work, be sloppy, be slippy, be silly. Pick a language you always wanted to try. Try it in several, and compare. Hell, do it in eToys, or AgentSheets, or modal.
 
-If you implement the game correctly, it'll take roughly 22 minutes and 22 seconds and 0 picoseconds to play. If you play the whole way through, it'll feel _totally bizarre_.
+Once the game is implemented, it'll take roughly 22 minutes and 22 seconds to play. If you play the whole way through, it'll feel _totally bizarre_. In a good way. You've probably never done anything quite like this before.
 
 ## No Rules!
 
@@ -47,17 +47,12 @@ That's the most important rule of all.
 
 Here are some suggested ways to share:
 
-* Record or live-stream yourself playing the game.
-  * One extra rule in this case: the viewer needs to be able to see your code.
-
 * Submit your implementation to me, so I can add it to this repo!
   * You can make a PR, open an issue, message me on [Mastodon](https://mastodon.social/@spiralganglion), find me at SPLASH con in October and hand me a CD-R, or whatever.
 
-## Watch me play
-
-But, like… spoilers. I suggest giving it a try for yourself first.
-
-[![Watch the video](https://img.youtube.com/vi/ZstE5y6nKSU/sddefault.jpg)](https://www.youtube.com/watch?v=ZstE5y6nKSU)
+* Record or live-stream yourself playing the game!
+  * One extra rule in this case: the viewer needs to be able to see your code.
+  * Send me a link to your stream/video! (PR, issue, [Masto](https://mastodon.social/@spiralganglion), whatever)
 
 ## Variations
 
@@ -74,6 +69,12 @@ With these rules, scoring works as follows:
 * 100% — If you get all the way to the end without messing up, your score is your time. Lower is better. This is the ultimate game mode for true sickos. 💚
 
 Lots of other variations are possible — go nuts.
+
+## Watch someone else play
+
+But, like… spoilers. I suggest giving it a try for yourself first.
+
+[![Watch the video](https://img.youtube.com/vi/ZstE5y6nKSU/sddefault.jpg)](https://www.youtube.com/watch?v=ZstE5y6nKSU)
 
 ---
 
