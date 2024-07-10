@@ -57,7 +57,7 @@ Here are some suggested ways to share:
 
 But, like… spoilers. I suggest giving it a try for yourself first.
 
-[![Watch the video](https://img.youtube.com/vi/ZstE5y6nKSU/sddefault.jpg)](https://www.youtube.com/ZstE5y6nKSU)
+[![Watch the video](https://img.youtube.com/vi/ZstE5y6nKSU/sddefault.jpg)](https://www.youtube.com/watch?v=ZstE5y6nKSU)
 
 ## Variations
 
