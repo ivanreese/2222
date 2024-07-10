@@ -17,6 +17,8 @@ Implement the following in a programming system of your choice. The weirder, the
 
 #### 2️⃣ Display each word for `0.6039604` seconds.
 
+* Yes, `0.6039604`. This is a serious game. Math matters.
+
 #### 3️⃣ As each word appears, you read the word out loud.
 
 * Don't stop if you make mistakes. Keep reading until all the words are done.
