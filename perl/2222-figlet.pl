@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
-use v5.40;
+use v5.34;
+use experimental qw/ signatures /;
 
 my $font = $ARGV[0] // 'standard';
 
