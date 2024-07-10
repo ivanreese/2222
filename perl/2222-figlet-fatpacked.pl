@@ -4630,7 +4630,7 @@ use Text::FIGlet;
 use IO::All;
 use Time::HiRes qw/ usleep /;
 
-my $fig = Text::FIGlet->new( -d => '/usr/share/figlet/', -f => $font );
+my $fig = Text::FIGlet->new( -d => $font_dir, -f => $font );
 
 sub fig ( $text ) {
     cls;
