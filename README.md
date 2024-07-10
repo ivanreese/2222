@@ -12,7 +12,8 @@ Implement the following in a programming system of your choice. The weirder, the
 
 #### 1️⃣ Load a list of 2222 words.
 
-* You can use the file `2222.txt` in this repo, or make your own list — but it needs to be exactly `2222` real words. `2222.txt` is four-letter words. It does have a few cuss words that are fun to say. It only has words that are fun, no bummers.
+* You can use the file `2222.txt` in this repo, or make your own list — but it needs to be exactly `2222` real words.
+* `2222.txt` is four-letter words. It does have a few cuss words that are fun to say. It only has words that are fun, no bummers.
 
 #### 2️⃣ Display each word for `0.6039604` seconds.
 
