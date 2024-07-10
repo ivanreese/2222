@@ -10,17 +10,17 @@ and know a tiny 🤏 bit of programming.
 
 Implement the following in a programming system of your choice. The weirder, the better!
 
-#### 1: Load a list of 2222 words.
+#### 1️⃣ Load a list of 2222 words.
 
 * You can use the file `2222.txt` in this repo, or make your own list — but it needs to be exactly `2222` real words. `2222.txt` is four-letter words. It does have a few cuss words that are fun to say. It only has words that are fun, no bummers.
 
-#### 2: Displays each word for `0.6039604` seconds.
+#### 2️⃣ Display each word for `0.6039604` seconds.
 
-#### 3: As each word appears, you read the word out loud.
+#### 3️⃣ As each word appears, you read the word out loud.
 
 * Don't stop if you make mistakes. Keep reading until all the words are done.
 
-#### 4: You win!
+#### 4️⃣ You win!
 
 ---
 
@@ -66,7 +66,7 @@ Variations are encouraged! For instance, here's what I call the **speedrun** var
 With these rules, scoring works as follows:
 
 * Any% — Try to get as far as you can without messing up. Your score is how many words you said before you messed up. Higher score is better.
-* 100% — If you get all the way to the end without messing up, your score is your time. Lower is better.
+* 100% — If you get all the way to the end without messing up, your score is your time. Lower is better. This is the ultimate game mode for true sickos. 💚
 
 Lots of other variations are possible — go nuts.
 
