@@ -1,13 +1,10 @@
 # 2222
 
-"Two Twenty-Two Two" is a game
+"Two Twenty-Two Two" is a game 🎲
 
-for people who like to be silly
+for people 🫣 who like to be silly
 
-and know a tiny bit of programming.
-
-[![Watch the video](https://img.youtube.com/vi/ZstE5y6nKSU/sddefault.jpg)](https://www.youtube.com/ZstE5y6nKSU)
-
+and know a tiny 🤏 bit of programming.
 
 ### How to play
 
@@ -25,6 +22,10 @@ and know a tiny bit of programming.
 You can spend as long as you like implementing the game, but I suggest speedrunning this part! Just make it work, be sloppy, be slippy, be silly.
 
 If you implement the game as described above, it'll take about 22 minutes and 22 seconds to play. If you play the whole way through, it'll feel _totally bizarre_.
+
+### Watch me play
+
+[![Watch the video](https://img.youtube.com/vi/ZstE5y6nKSU/sddefault.jpg)](https://www.youtube.com/ZstE5y6nKSU)
 
 ### Variations
 
