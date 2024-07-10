@@ -8,7 +8,9 @@ and know a tiny 🤏 bit of programming.
 
 ## How to play
 
-Implement the following in a programming system of your choice. The weirder, the better!
+Implement the following in a programming system of your choice.
+
+Your program should:
 
 #### 1️⃣ Load a list of 2222 words.
 
@@ -27,9 +29,9 @@ Implement the following in a programming system of your choice. The weirder, the
 
 ---
 
-You can spend as long as you like implementing the game, but I suggest speedrunning this part! Just make it work, be sloppy, be slippy, be silly.
+You can spend as long as you like implementing the game, but I suggest speedrunning this part! Just make it work, be sloppy, be slippy, be silly. Pick a language you always wanted to try. Try it in several, and compare. Hell, do it in eToys, or AgentSheets, or modal.
 
-If you implement the game as described above, it'll take roughly 22 minutes and 22 seconds and 0 picoseconds to play. If you play the whole way through, it'll feel _totally bizarre_.
+If you implement the game correctly, it'll take roughly 22 minutes and 22 seconds and 0 picoseconds to play. If you play the whole way through, it'll feel _totally bizarre_.
 
 ## No Rules!
 
