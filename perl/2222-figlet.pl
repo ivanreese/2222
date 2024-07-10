@@ -1,9 +1,12 @@
 #!/usr/bin/env perl
 
+# time perl perl/2222-figlet-fatpacked.pl [figlet font] [path to figlet fonts]
+
 use v5.34;
 use experimental qw/ signatures /;
 
 my $font = $ARGV[0] // 'standard';
+my $font_dir = $ARGV[1] // '/usr/share/figlet/';
 
 use FindBin;
 use Term::ANSIScreen qw/ cls /;
