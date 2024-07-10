@@ -4,7 +4,7 @@ Contributed by John Barrett ([jbarrett](https://github.com/jbarrett))
 
 To play this version:
 1. Download `2222-figlet-fatpacked.pl` to your computer.
-2. Download `slant.ttf`, or one of the other fonts from the [FIGlet font database](http://www.figlet.org/fontdb.cgi).
+2. Download `slant.flf`, or one of the other fonts from the [FIGlet font database](http://www.figlet.org/fontdb.cgi).
 3. Get a word list, like `2222.txt` from the root of the repo.
 4. Put all 3 files together in a folder
 5. Make sure you have perl, then run: `time perl 2222-figlet-fatpacked.pl slant .`
