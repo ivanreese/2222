@@ -22,5 +22,4 @@ sub fig ( $text ) {
     usleep 603_960; # *cough* erm, the 4 is gone because screen drawing takes time?
 }
 
-fig $_ for io("$FindBin::Bin/../2222.txt")->chomp->getlines;
-
+fig $_ for io("$FindBin::Bin/2222.txt")->chomp->getlines;

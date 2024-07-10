@@ -9,27 +9,27 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
   use strict; use warnings;
   package IO::All;
   our $VERSION = '0.87';
-  
+
   require Carp;
   # So one can use Carp::carp "$message" - without the parenthesis.
   sub Carp::carp;
-  
+
   use IO::All::Base -base;
-  
+
   use File::Spec();
   use Symbol();
   use Fcntl;
   use Cwd ();
-  
+
   our @EXPORT = qw(io);
-  
+
   #===============================================================================
   # Object creation and setup methods
   #===============================================================================
   my $autoload = {
       qw(
           touch file
-  
+
           dir_handle dir
           All dir
           all_files dir
@@ -41,28 +41,28 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
           mkdir dir
           mkpath dir
           next dir
-  
+
           stdin stdio
           stdout stdio
           stderr stdio
-  
+
           socket_handle socket
           accept socket
           shutdown socket
-  
+
           readlink link
           symlink link
       )
   };
-  
+
   # XXX - These should die if the given argument exists but is not a
   # link, dbm, etc.
   sub link  { require IO::All::Link;  goto &IO::All::Link::link; }
   sub dbm   { require IO::All::DBM;   goto &IO::All::DBM::dbm; }
   sub mldbm { require IO::All::MLDBM; goto &IO::All::MLDBM::mldbm; }
-  
+
   sub autoload { my $self = shift; $autoload; }
-  
+
   sub AUTOLOAD {
       my $self = shift;
       my $method = $IO::All::AUTOLOAD;
@@ -75,7 +75,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       bless $self, $class;
       $self->$method(@_);
   }
-  
+
   sub _autoload_class {
       my $self = shift;
       my $method = shift;
@@ -102,7 +102,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       }
       $self->throw("Can't find a class for method '$method'");
   }
-  
+
   sub new {
       my $self = shift;
       my $package = ref($self) || $self;
@@ -129,7 +129,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       $new->name($name);
       $new->_init;
   }
-  
+
   sub _copy_from {
       my $self = shift;
       my $other = shift;
@@ -139,13 +139,13 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
           *$self->{$_} = *$other->{$_};
       }
   }
-  
+
   sub handle {
       my $self = shift;
       $self->_handle(shift) if @_;
       return $self->_init;
   }
-  
+
   #===============================================================================
   # Overloading support
   #===============================================================================
@@ -156,7 +156,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
           warn(@_);
       }
   };
-  
+
   use overload '""'  => '_overload_stringify';
   use overload '|'   => '_overload_bitwise_or';
   use overload '<<'  => '_overload_left_bitshift';
@@ -168,7 +168,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
   use overload '@{}' => '_overload_array_deref';
   use overload '%{}' => '_overload_hash_deref';
   use overload '&{}' => '_overload_code_deref';
-  
+
   sub _overload_bitwise_or	{ shift->_overload_handler(@_, '|' ); }
   sub _overload_left_bitshift	{ shift->_overload_handler(@_, '<<'); }
   sub _overload_right_bitshift	{ shift->_overload_handler(@_, '>>'); }
@@ -178,18 +178,18 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
   sub _overload_array_deref	{ shift->_overload_handler(@_, '@{}'); }
   sub _overload_hash_deref	{ shift->_overload_handler(@_, '%{}'); }
   sub _overload_code_deref	{ shift->_overload_handler(@_, '&{}'); }
-  
+
   sub _overload_handler {
       my ($self) = @_;
       my $method = $self->_get_overload_method(@_);
       $self->$method(@_);
   }
-  
+
   my $op_swap = {
       '>' => '<', '>>' => '<<',
       '<' => '>', '<<' => '>>',
   };
-  
+
   sub _overload_table {
       my $self = shift;
       (
@@ -197,14 +197,14 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
           '* < *' => '_overload_any_from_any',
           '* >> *' => '_overload_any_addto_any',
           '* << *' => '_overload_any_addfrom_any',
-  
+
           '* < scalar' => '_overload_scalar_to_any',
           '* > scalar' => '_overload_any_to_scalar',
           '* << scalar' => '_overload_scalar_addto_any',
           '* >> scalar' => '_overload_any_addto_scalar',
       )
   };
-  
+
   sub _get_overload_method {
       my ($self, $arg1, $arg2, $swap, $operator) = @_;
       if ($swap) {
@@ -212,33 +212,33 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       }
       my $arg1_type = $self->_get_argument_type($arg1);
       my $table1 = { $arg1->_overload_table };
-  
+
       if ($operator =~ /\{\}$/) {
           my $key = "$operator $arg1_type";
           return $table1->{$key} || $self->_overload_undefined($key);
       }
-  
+
       my $arg2_type = $self->_get_argument_type($arg2);
       my @table2 = UNIVERSAL::isa($arg2, "IO::All")
       ? ($arg2->_overload_table)
       : ();
       my $table = { %$table1, @table2 };
-  
+
       my @keys = (
           "$arg1_type $operator $arg2_type",
           "* $operator $arg2_type",
       );
       push @keys, "$arg1_type $operator *", "* $operator *"
         unless $arg2_type =~ /^(scalar|array|hash|code|ref)$/;
-  
+
       for (@keys) {
           return $table->{$_}
             if defined $table->{$_};
       }
-  
+
       return $self->_overload_undefined($keys[0]);
   }
-  
+
   sub _get_argument_type {
       my $self = shift;
       my $argument = shift;
@@ -252,20 +252,20 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
         if defined $argument->pathname and not $argument->type;
       return $argument->type || 'unknown';
   }
-  
+
   sub _overload_cmp {
       my ($self, $other, $swap) = @_;
       $self = defined($self) ? $self.'' : $self;
       ($self, $other) = ($other, $self) if $swap;
       $self cmp $other;
   }
-  
+
   sub _overload_stringify {
       my $self = shift;
       my $name = $self->pathname;
       return defined($name) ? $name : overload::StrVal($self);
   }
-  
+
   sub _overload_undefined {
       my $self = shift;
       require Carp;
@@ -274,55 +274,55 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
         if $^W;
       return '_overload_noop';
   }
-  
+
   sub _overload_noop {
       my $self = shift;
       return;
   }
-  
+
   sub _overload_any_addfrom_any {
       $_[1]->append($_[2]->all);
       $_[1];
   }
-  
+
   sub _overload_any_addto_any {
       $_[2]->append($_[1]->all);
       $_[2];
   }
-  
+
   sub _overload_any_from_any {
       $_[1]->close if $_[1]->is_file and $_[1]->is_open;
       $_[1]->print($_[2]->all);
       $_[1];
   }
-  
+
   sub _overload_any_to_any {
       $_[2]->close if $_[2]->is_file and $_[2]->is_open;
       $_[2]->print($_[1]->all);
       $_[2];
   }
-  
+
   sub _overload_any_to_scalar {
       $_[2] = $_[1]->all;
   }
-  
+
   sub _overload_any_addto_scalar {
       $_[2] .= $_[1]->all;
       $_[2];
   }
-  
+
   sub _overload_scalar_addto_any {
       $_[1]->append($_[2]);
       $_[1];
   }
-  
+
   sub _overload_scalar_to_any {
       local $\;
       $_[1]->close if $_[1]->is_file and $_[1]->is_open;
       $_[1]->print($_[2]);
       $_[1];
   }
-  
+
   #===============================================================================
   # Private Accessors
   #===============================================================================
@@ -332,7 +332,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
   field _handle => undef;
   field _constructor => undef;
   field _partial_spec_class => undef;
-  
+
   #===============================================================================
   # Public Accessors
   #===============================================================================
@@ -345,21 +345,21 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
   chain perms => undef;
   chain separator => $/;
   field type => '';
-  
+
   sub _spec_class {
      my $self = shift;
-  
+
      my $ret = 'File::Spec';
      if (my $partial = $self->_partial_spec_class(@_)) {
         $ret .= '::' . $partial;
         eval "require $ret";
      }
-  
+
      return $ret
   }
-  
+
   sub pathname {my $self = shift; $self->name(@_) }
-  
+
   #===============================================================================
   # Chainable option methods (write only)
   #===============================================================================
@@ -372,7 +372,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
   option 'rdonly';
   option 'rdwr';
   option 'strict';
-  
+
   #===============================================================================
   # IO::Handle proxy methods
   #===============================================================================
@@ -382,7 +382,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
   proxy 'stat';
   proxy 'tell';
   proxy 'truncate';
-  
+
   #===============================================================================
   # IO::Handle proxy methods that open the handle if needed
   #===============================================================================
@@ -392,25 +392,25 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
   proxy_open syswrite => O_CREAT | O_WRONLY;
   proxy_open seek => $^O eq 'MSWin32' ? '<' : '+<';
   proxy_open 'getc';
-  
+
   #===============================================================================
   # Tie Interface
   #===============================================================================
   sub tie { my $self = shift; tie *$self, $self; }
-  
+
   sub TIEHANDLE {
       return $_[0] if ref $_[0];
       my $class = shift;
       my $self = bless Symbol::gensym(), $class;
       $self->init(@_);
   }
-  
+
   sub READLINE {
       goto &getlines if wantarray;
       goto &getline;
   }
-  
-  
+
+
   sub DESTROY {
       my $self = shift;
       no warnings;
@@ -419,9 +419,9 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       }
       $self->close if $self->is_open;
   }
-  
+
   sub BINMODE { my $self = shift; CORE::binmode *$self->io_handle; }
-  
+
   {
       no warnings;
       *GETC   = \&getc;
@@ -435,7 +435,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       *CLOSE  = \&close;
       *FILENO = \&fileno;
   }
-  
+
   #===============================================================================
   # File::Spec Interface
   #===============================================================================
@@ -444,7 +444,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
      eval { Cwd::abs_path($self->pathname); 0 } ||
         File::Spec->canonpath($self->pathname)
   }
-  
+
   sub catdir {
       my $self = shift;
       my @args = grep defined, $self->name, @_;
@@ -469,7 +469,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
   sub catpath	{ my $self=shift; $self->_constructor->(File::Spec->catpath(@_)); }
   sub abs2rel	{ File::Spec->abs2rel(shift->pathname, @_); }
   sub rel2abs	{ File::Spec->rel2abs(shift->pathname, @_); }
-  
+
   #===============================================================================
   # Public IO Action Methods
   #===============================================================================
@@ -480,7 +480,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       $self->is_absolute(1);
       return $self;
   }
-  
+
   sub all {
       my $self = shift;
       $self->_assert_open('<');
@@ -490,26 +490,26 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       $self->_autoclose && $self->close;
       return $all;
   }
-  
+
   sub append {
       my $self = shift;
       $self->_assert_open('>>');
       $self->print(@_);
   }
-  
+
   sub appendln {
       my $self = shift;
       $self->_assert_open('>>');
       $self->println(@_);
   }
-  
+
   sub binary {
       my $self = shift;
       CORE::binmode($self->io_handle) if $self->is_open;
       push @{$self->_layers}, ":raw";
       return $self;
   }
-  
+
   sub binmode {
       my $self = shift;
       my $layer = shift;
@@ -517,14 +517,14 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       push @{$self->_layers}, $layer;
       return $self;
   }
-  
+
   sub _sane_binmode {
       my ($self, $layer) = @_;
       $layer
       ? CORE::binmode($self->io_handle, $layer)
       : CORE::binmode($self->io_handle);
   }
-  
+
   sub buffer {
       my $self = shift;
       if (not @_) {
@@ -537,14 +537,14 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       *$self->{buffer} = $buffer_ref;
       return $self;
   }
-  
+
   sub clear {
       my $self = shift;
       my $buffer = *$self->{buffer};
       $$buffer = '';
       return $self;
   }
-  
+
   sub close {
       my $self = shift;
       return unless $self->is_open;
@@ -556,16 +556,16 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
         if defined $io_handle;
       return $self;
   }
-  
+
   sub empty {
       my $self = shift;
       my $message =
         "Can't call empty on an object that is neither file nor directory";
       $self->throw($message);
   }
-  
+
   sub exists {my $self = shift; -e $self->pathname }
-  
+
   sub getline {
       my $self = shift;
       return $self->getline_backwards
@@ -582,7 +582,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       $self->close if $self->_autoclose;
       return undef;
   }
-  
+
   sub getlines {
       my $self = shift;
       return $self->getlines_backwards
@@ -601,7 +601,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       $self->close if $self->_autoclose;
       return ();
   }
-  
+
   sub is_dir	{ UNIVERSAL::isa(shift, 'IO::All::Dir');	}
   sub is_dbm	{ UNIVERSAL::isa(shift, 'IO::All::DBM');	}
   sub is_file	{ UNIVERSAL::isa(shift, 'IO::All::File');	}
@@ -612,7 +612,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
   sub is_string	{ UNIVERSAL::isa(shift, 'IO::All::String');	}
   sub is_temp	{ UNIVERSAL::isa(shift, 'IO::All::Temp');	}
   sub length	{ length ${shift->buffer};			}
-  
+
   sub open {
       my $self = shift;
       return $self if $self->is_open;
@@ -638,12 +638,12 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       }
       $self->_set_binmode;
   }
-  
+
   sub println {
       my $self = shift;
       $self->print(map {/\n\z/ ? ($_) : ($_, "\n")} @_);
   }
-  
+
   sub read {
       my $self = shift;
       $self->_assert_open('<');
@@ -657,18 +657,18 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       $self->_error_check;
       return $length || $self->_autoclose && $self->close && 0;
   }
-  
+
   {
       no warnings;
       *readline = \&getline;
   }
-  
+
   # deprecated
   sub scalar {
       my $self = shift;
       $self->all(@_);
   }
-  
+
   sub slurp {
       my $self = shift;
       my $slurp = $self->all;
@@ -682,7 +682,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
           split /(?<=\Q$separator\E)/, $slurp;
       }
   }
-  
+
   sub utf8 {
       my $self = shift;
       if ($] < 5.008) {
@@ -691,11 +691,11 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       $self->encoding('UTF-8');
       return $self;
   }
-  
+
   sub _has_utf8 {
       grep { $_ eq ':encoding(UTF-8)' } @{shift->_layers}
   }
-  
+
   sub encoding {
       my $self = shift;
       my $encoding = shift;
@@ -707,12 +707,12 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       push @{$self->_layers}, ":encoding($encoding)";
       return $self;
   }
-  
+
   sub _set_encoding {
       my ($self, $encoding) = @_;
       return CORE::binmode($self->io_handle, ":encoding($encoding)");
   }
-  
+
   sub write {
       my $self = shift;
       $self->_assert_open('>');
@@ -723,7 +723,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       $self->clear unless @_;
       return $length;
   }
-  
+
   #===============================================================================
   # Implementation methods. Subclassable.
   #===============================================================================
@@ -737,7 +737,7 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
         if $self->_confess;
       return Carp::croak(@_);
   }
-  
+
   #===============================================================================
   # Private instance methods
   #===============================================================================
@@ -753,14 +753,14 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
         } or
         $self->throw("Can't make $dir_name"));
   }
-  
+
   sub _assert_open {
       my $self = shift;
       return if $self->is_open;
       $self->file unless $self->type;
       return $self->open(@_);
   }
-  
+
   sub _error_check {
       my $self = shift;
       my $saved_error = $!;
@@ -768,13 +768,13 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       return unless $self->io_handle->error;
       $self->throw($saved_error);
   }
-  
+
   sub _set_binmode {
       my $self = shift;
       $self->_sane_binmode($_) for @{$self->_layers};
       return $self;
   }
-  
+
   #===============================================================================
   # Stat Methods
   #===============================================================================
@@ -788,22 +788,22 @@ $fatpacked{"IO/All.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL';
       {
           my $idx = $stat_field_idx;
           my $name = $stat_fields[$idx];
-  
+
           *$name = sub {
               my $self = shift;
               return (stat($self->io_handle || $self->pathname))[$idx];
           };
       }
   }
-  
+
 IO_ALL
 
 $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_BASE';
   use strict; use warnings;
   package IO::All::Base;
-  
+
   use Fcntl;
-  
+
   sub import {
       my $class = shift;
       my $flag = $_[0] || '';
@@ -826,7 +826,7 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
           }
       }
   }
-  
+
   sub _generate_constructor {
       my $class = shift;
       my (@flags, %flags, $key);
@@ -850,14 +850,14 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
           return $self;
       }
   }
-  
+
   sub _init {
       my $self = shift;
       $self->io_handle(undef);
       $self->is_open(0);
       return $self;
   }
-  
+
   #===============================================================================
   # Closure generating functions
   #===============================================================================
@@ -874,7 +874,7 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
             return $self;
         };
   }
-  
+
   sub chain {
       my $package = caller;
       my ($field, $default) = @_;
@@ -890,7 +890,7 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
             return *$self->{$field};
         };
   }
-  
+
   sub field {
       my $package = caller;
       my ($field, $default) = @_;
@@ -909,7 +909,7 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
             *$self->{$field} = shift;
         };
   }
-  
+
   sub const {
       my $package = caller;
       my ($field, $default) = @_;
@@ -917,7 +917,7 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       return if defined &{"${package}::$field"};
       *{"${package}::$field"} = sub { $default };
   }
-  
+
   sub proxy {
       my $package = caller;
       my ($proxy) = @_;
@@ -931,7 +931,7 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
             wantarray ? @return : $return[0];
         };
   }
-  
+
   sub proxy_open {
       my $package = caller;
       my ($proxy, @args) = @_;
@@ -953,7 +953,7 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       }
       : $method;
   }
-  
+
   sub mixin_import {
       my $target_class = shift;
       $target_class = caller(0)
@@ -971,7 +971,7 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
           *{"$pseudo_class\::$_"} = $methods{$_};
       }
   }
-  
+
   sub mixin_methods {
       my $mixin_class = shift;
       no strict 'refs';
@@ -982,7 +982,7 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
             : ($_, \ &{"$mixin_class\::$_"})
       } (keys %methods);
   }
-  
+
   sub all_methods {
       no strict 'refs';
       my $class = shift;
@@ -993,35 +993,35 @@ $fatpacked{"IO/All/Base.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       } keys %{"$class\::"};
       return (%methods);
   }
-  
+
   1;
 IO_ALL_BASE
 
 $fatpacked{"IO/All/DBM.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_DBM';
   use strict; use warnings;
   package IO::All::DBM;
-  
+
   use IO::All::File -base;
   use Fcntl;
-  
+
   field _dbm_list => [];
   field '_dbm_class';
   field _dbm_extra => [];
-  
+
   sub dbm {
       my $self = shift;
       bless $self, __PACKAGE__;
       $self->_dbm_list([@_]);
       return $self;
   }
-  
+
   sub _assert_open {
       my $self = shift;
       return $self->tied_file
         if $self->tied_file;
       $self->open;
   }
-  
+
   sub assert_filepath {
       my $self = shift;
       $self->SUPER::assert_filepath(@_);
@@ -1032,7 +1032,7 @@ $fatpacked{"IO/All/DBM.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
           $self->assert(1)->rdwr($rdwr)->rdonly(1);
       }
   }
-  
+
   sub open {
       my $self = shift;
       $self->is_open(1);
@@ -1067,7 +1067,7 @@ $fatpacked{"IO/All/DBM.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
       $self->perms(0666) unless defined $self->perms;
       return $self->tie_dbm;
   }
-  
+
   sub tie_dbm {
       my $self = shift;
       my $hash;
@@ -1079,7 +1079,7 @@ $fatpacked{"IO/All/DBM.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
         if $self->_has_utf8;
       $self->tied_file($hash);
   }
-  
+
   sub add_utf8_dbm_filter {
       my $self = shift;
       my $db = shift;
@@ -1088,32 +1088,32 @@ $fatpacked{"IO/All/DBM.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
       $db->filter_fetch_key(sub { utf8::decode($_) });
       $db->filter_fetch_value(sub { utf8::decode($_) });
   }
-  
+
   1;
 IO_ALL_DBM
 
 $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_DIR';
   use strict; use warnings;
   package IO::All::Dir;
-  
+
   use Scalar::Util 'blessed';
   use File::Glob 'bsd_glob';
   use IO::All::Filesys -base;
   use IO::All -base;
   use IO::Dir;
-  
+
   #===============================================================================
   const type => 'dir';
   option 'sort' => 1;
   chain filter => undef;
   option 'deep';
   field 'chdir_from';
-  
+
   #===============================================================================
   sub dir {
       my $self = shift;
       my $had_prev = blessed($self) && $self->pathname;
-  
+
       bless $self, __PACKAGE__ unless $had_prev;
       if (@_ && @_ > 1 || @_ && $had_prev) {
          $self->name(
@@ -1127,21 +1127,21 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
       }
       return $self->_init;
   }
-  
+
   sub dir_handle {
       my $self = shift;
       bless $self, __PACKAGE__;
       $self->_handle(shift) if @_;
       return $self->_init;
   }
-  
+
   #===============================================================================
   sub _assert_open {
       my $self = shift;
       return if $self->is_open;
       $self->open;
   }
-  
+
   sub open {
       my $self = shift;
       $self->is_open(1);
@@ -1153,7 +1153,7 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
         or $self->throw($self->open_msg);
       return $self;
   }
-  
+
   sub open_msg {
       my $self = shift;
       my $name = defined $self->pathname
@@ -1161,15 +1161,15 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
         : '';
       return qq{Can't open directory$name:\n$!};
   }
-  
+
   sub exists { -d shift->pathname }
-  
+
   #===============================================================================
   sub All {
       my $self = shift;
       $self->all(0);
   }
-  
+
   sub all {
       my $self = shift;
       my $depth = @_ ? shift(@_) : $self->_deep ? 0 : 1;
@@ -1185,37 +1185,37 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
       return @all unless $first and $self->_sort;
       return sort {$a->pathname cmp $b->pathname} @all;
   }
-  
+
   sub All_Dirs {
       my $self = shift;
       $self->all_dirs(0);
   }
-  
+
   sub all_dirs {
       my $self = shift;
       grep {$_->is_dir} $self->all(@_);
   }
-  
+
   sub All_Files {
       my $self = shift;
       $self->all_files(0);
   }
-  
+
   sub all_files {
       my $self = shift;
       grep {$_->is_file} $self->all(@_);
   }
-  
+
   sub All_Links {
    my $self = shift;
    $self->all_links(0);
   }
-  
+
   sub all_links {
       my $self = shift;
       grep {$_->is_link} $self->all(@_);
   }
-  
+
   sub chdir {
       my $self = shift;
       require Cwd;
@@ -1223,7 +1223,7 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
       CORE::chdir($self->pathname);
       return $self;
   }
-  
+
   sub empty {
       my $self = shift;
       my $dh;
@@ -1233,7 +1233,7 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
       }
       return 1;
   }
-  
+
   sub mkdir {
       my $self = shift;
       defined($self->perms)
@@ -1241,20 +1241,20 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
       : (CORE::mkdir($self->pathname) or die "mkdir failed: $!");
       return $self;
   }
-  
+
   sub mkpath {
       my $self = shift;
       require File::Path;
       File::Path::mkpath($self->pathname, @_);
       return $self;
   }
-  
+
   sub file {
       my ($self, @rest) = @_;
-  
+
       return $self->_constructor->()->file($self->pathname, @rest)
   }
-  
+
   sub next {
       my $self = shift;
       $self->_assert_open;
@@ -1264,7 +1264,7 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
       $io->absolute if $self->is_absolute;
       return $io;
   }
-  
+
   sub readdir {
       my $self = shift;
       $self->_assert_open;
@@ -1287,45 +1287,45 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
       if ($self->_has_utf8) { utf8::decode($name) }
       return $name;
   }
-  
+
   sub rmdir {
       my $self = shift;
       rmdir $self->pathname;
   }
-  
+
   sub rmtree {
       my $self = shift;
       require File::Path;
       File::Path::rmtree($self->pathname, @_);
   }
-  
+
   sub glob {
      my ($self, @rest) = @_;
-  
+
      map {;
         my $ret = $self->_constructor->($_);
         $ret->absolute if $self->is_absolute;
         $ret
      } bsd_glob $self->_spec_class->catdir( $self->pathname, @rest );
   }
-  
+
   sub copy {
       my ($self, $new) = @_;
-  
+
       require File::Copy::Recursive;
-  
+
       File::Copy::Recursive::dircopy($self->name, $new)
           or die "failed to copy $self to $new: $!";
        $self->_constructor->($new)
   }
-  
+
   sub DESTROY {
       my $self = shift;
       CORE::chdir($self->chdir_from)
         if $self->chdir_from;
         # $self->SUPER::DESTROY(@_);
   }
-  
+
   #===============================================================================
   sub _overload_table {
       (
@@ -1334,15 +1334,15 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
           '%{} dir' => '_overload_as_hash',
       )
   }
-  
+
   sub _overload_as_scalar {
       \ $_[1];
   }
-  
+
   sub _overload_as_array {
       [ $_[1]->all ];
   }
-  
+
   sub _overload_as_hash {
       +{
           map {
@@ -1351,23 +1351,23 @@ $fatpacked{"IO/All/Dir.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_A
           } $_[1]->all
       };
   }
-  
+
   1;
 IO_ALL_DIR
 
 $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_FILE';
   use strict; use warnings;
   package IO::All::File;
-  
+
   use IO::All::Filesys -base;
   use IO::All -base;
   use IO::File;
   use File::Copy ();
-  
+
   #===============================================================================
   const type => 'file';
   field tied_file => undef;
-  
+
   #===============================================================================
   sub file {
       my $self = shift;
@@ -1380,14 +1380,14 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       }
       return $self->_init;
   }
-  
+
   sub file_handle {
       my $self = shift;
       bless $self, __PACKAGE__;
       $self->_handle(shift) if @_;
       return $self->_init;
   }
-  
+
   #===============================================================================
   sub assert_filepath {
       my $self = shift;
@@ -1397,7 +1397,7 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       (undef, $directory) = File::Spec->splitpath($self->pathname);
       $self->_assert_dirpath($directory);
   }
-  
+
   sub assert_open_backwards {
       my $self = shift;
       return if $self->is_open;
@@ -1408,14 +1408,14 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       $self->io_handle($io_handle);
       $self->is_open(1);
   }
-  
+
   sub _assert_open {
       my $self = shift;
       return if $self->is_open;
       $self->mode(shift) unless $self->mode;
       $self->open;
   }
-  
+
   sub assert_tied_file {
       my $self = shift;
       return $self->tied_file || do {
@@ -1432,7 +1432,7 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
           $self->tied_file($array_ref);
       };
   }
-  
+
   sub open {
       my $self = shift;
       $self->is_open(1);
@@ -1457,9 +1457,9 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       $self->set_lock;
       $self->_set_binmode;
   }
-  
+
   sub exists { -f shift->pathname }
-  
+
   my %mode_msg = (
       '>' => 'output',
       '<' => 'input',
@@ -1475,16 +1475,16 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
         : '';
       return qq{Can't open file$name$direction:\n$!};
   }
-  
+
   #===============================================================================
   sub copy {
       my ($self, $new) = @_;
-  
+
       File::Copy::copy($self->name, $new)
           or die "failed to copy $self to $new: $!";
       $self->file($new)
   }
-  
+
   sub close {
       my $self = shift;
       return unless $self->is_open;
@@ -1507,24 +1507,24 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
         if defined $io_handle;
       return $self;
   }
-  
+
   sub empty {
       my $self = shift;
       -z $self->pathname;
   }
-  
+
   sub filepath {
       my $self = shift;
       my ($volume, $path) = $self->splitpath;
       return File::Spec->catpath($volume, $path, '');
   }
-  
+
   sub getline_backwards {
       my $self = shift;
       $self->assert_open_backwards;
       return $self->io_handle->readline;
   }
-  
+
   sub getlines_backwards {
       my $self = shift;
       my @lines;
@@ -1533,13 +1533,13 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       }
       return @lines;
   }
-  
+
   sub head {
       my $self = shift;
       my $lines = shift || 10;
       my @return;
       $self->close;
-  
+
       LINES:
       while ($lines--) {
           if (defined (my $l = $self->getline)) {
@@ -1549,11 +1549,11 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
               last LINES;
           }
       }
-  
+
       $self->close;
       return wantarray ? @return : join '', @return;
   }
-  
+
   sub tail {
       my $self = shift;
       my $lines = shift || 10;
@@ -1565,7 +1565,7 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       $self->close;
       return wantarray ? @return : join '', @return;
   }
-  
+
   sub touch {
       my $self = shift;
       return $self->SUPER::touch(@_)
@@ -1576,12 +1576,12 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       $self->mode($mode);
       return $self;
   }
-  
+
   sub unlink {
       my $self = shift;
       unlink $self->pathname;
   }
-  
+
   #===============================================================================
   sub _overload_table {
       my $self = shift;
@@ -1594,44 +1594,44 @@ $fatpacked{"IO/All/File.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
           '%{} file' => '_overload_file_as_dbm',
       )
   }
-  
+
   sub _overload_file_to_file {
       require File::Copy;
       File::Copy::copy($_[1]->pathname, $_[2]->pathname);
       $_[2];
   }
-  
+
   sub _overload_file_from_file {
       require File::Copy;
       File::Copy::copy($_[2]->pathname, $_[1]->pathname);
       $_[1];
   }
-  
+
   sub _overload_file_as_array {
       $_[1]->assert_tied_file;
   }
-  
+
   sub _overload_file_as_dbm {
       $_[1]->dbm
         unless $_[1]->isa('IO::All::DBM');
       $_[1]->_assert_open;
   }
-  
+
   sub _overload_file_as_scalar {
       my $scalar = $_[1]->scalar;
       return \$scalar;
   }
-  
+
   1;
 IO_ALL_FILE
 
 $fatpacked{"IO/All/Filesys.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_FILESYS';
   use strict; use warnings;
   package IO::All::Filesys;
-  
+
   use IO::All::Base -base;
   use Fcntl qw(:flock);
-  
+
   my %spec_map = (
       unix  => 'Unix',
       win32 => 'Win32',
@@ -1641,41 +1641,41 @@ $fatpacked{"IO/All/Filesys.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'
   );
   sub os {
       my ($self, $type) = @_;
-  
+
       my ($v, $d, $f) = $self->_spec_class->splitpath($self->name);
       my @d = $self->_spec_class->splitdir($d);
-  
+
       $self->_spec_class($spec_map{$type});
-  
+
       $self->name( $self->_spec_class->catfile( @d, $f ) );
-  
+
       return $self
   }
-  
+
   sub exists { my $self = shift; -e $self->name }
-  
+
   sub filename {
       my $self = shift;
       my $filename;
       (undef, undef, $filename) = $self->splitpath;
       return $filename;
   }
-  
+
   sub ext {
      my $self = shift;
-  
+
      return $1 if $self->filename =~ m/\.([^\.]+)$/
   }
   {
       no warnings 'once';
       *extension = \&ext;
   }
-  
+
   sub mimetype {
      require File::MimeInfo;
      return File::MimeInfo::mimetype($_[0]->filename)
   }
-  
+
   sub is_absolute {
       my $self = shift;
       return *$self->{is_absolute} = shift if @_;
@@ -1683,7 +1683,7 @@ $fatpacked{"IO/All/Filesys.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'
         if defined *$self->{is_absolute};
       *$self->{is_absolute} = IO::All::is_absolute($self) ? 1 : 0;
   }
-  
+
   sub is_executable { my $self = shift; -x $self->name }
   sub is_readable { my $self = shift; -r $self->name }
   sub is_writable { my $self = shift; -w $self->name }
@@ -1691,14 +1691,14 @@ $fatpacked{"IO/All/Filesys.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'
       no warnings 'once';
       *is_writeable = \&is_writable;
   }
-  
+
   sub pathname {
       my $self = shift;
       return *$self->{pathname} = shift if @_;
       return *$self->{pathname} if defined *$self->{pathname};
       return $self->name;
   }
-  
+
   sub relative {
       my $self = shift;
       if (my $base = $_[0]) {
@@ -1709,7 +1709,7 @@ $fatpacked{"IO/All/Filesys.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'
       $self->is_absolute(0);
       return $self;
   }
-  
+
   sub rename {
       my $self = shift;
       my $new = shift;
@@ -1719,7 +1719,7 @@ $fatpacked{"IO/All/Filesys.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'
           : $self->_constructor->($new)
         : undef;
   }
-  
+
   sub set_lock {
       my $self = shift;
       return unless $self->_lock;
@@ -1729,25 +1729,25 @@ $fatpacked{"IO/All/Filesys.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'
       : LOCK_SH;
       flock $io_handle, $flag;
   }
-  
+
   sub stat {
       my $self = shift;
       return IO::All::stat($self, @_)
         if $self->is_open;
         CORE::stat($self->pathname);
   }
-  
+
   sub touch {
       my $self = shift;
       $self->utime;
   }
-  
+
   sub unlock {
       my $self = shift;
       flock $self->io_handle, LOCK_UN
         if $self->_lock;
   }
-  
+
   sub utime {
       my $self = shift;
       my $atime = shift;
@@ -1757,37 +1757,37 @@ $fatpacked{"IO/All/Filesys.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'
       utime($atime, $mtime, $self->name);
       return $self;
   }
-  
+
   1;
 IO_ALL_FILESYS
 
 $fatpacked{"IO/All/Link.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_LINK';
   use strict; use warnings;
   package IO::All::Link;
-  
+
   use IO::All::File -base;
-  
+
   const type => 'link';
-  
+
   sub link {
       my $self = shift;
       bless $self, __PACKAGE__;
       $self->name(shift) if @_;
       $self->_init;
   }
-  
+
   sub readlink {
       my $self = shift;
       $self->_constructor->(CORE::readlink($self->name));
   }
-  
+
   sub symlink {
       my $self = shift;
       my $target = shift;
       $self->assert_filepath if $self->_assert;
       CORE::symlink($target, $self->pathname);
   }
-  
+
   sub AUTOLOAD {
       my $self = shift;
       our $AUTOLOAD;
@@ -1799,7 +1799,7 @@ $fatpacked{"IO/All/Link.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       }
       $target->$method(@_);
   }
-  
+
   sub target {
       my $self = shift;
       return *$self->{target} if *$self->{target};
@@ -1816,20 +1816,20 @@ $fatpacked{"IO/All/Link.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       }
       *$self->{target} = $new;
   }
-  
+
   sub exists { -l shift->pathname }
-  
+
   1;
 IO_ALL_LINK
 
 $fatpacked{"IO/All/MLDBM.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_MLDBM';
   use strict; use warnings;
   package IO::All::MLDBM;
-  
+
   use IO::All::DBM -base;
-  
+
   field _serializer => 'Data::Dumper';
-  
+
   sub mldbm {
       my $self = shift;
       bless $self, __PACKAGE__;
@@ -1839,7 +1839,7 @@ $fatpacked{"IO/All/MLDBM.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO
       $self->_dbm_list([@dbm_list]);
       return $self;
   }
-  
+
   sub tie_dbm {
       my $self = shift;
       my $filename = $self->name;
@@ -1855,33 +1855,33 @@ $fatpacked{"IO/All/MLDBM.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO
         if $self->_has_utf8;
       $self->tied_file($hash);
   }
-  
+
   1;
 IO_ALL_MLDBM
 
 $fatpacked{"IO/All/Pipe.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_PIPE';
   use strict; use warnings;
   package IO::All::Pipe;
-  
+
   use IO::All -base;
   use IO::File;
-  
+
   const type => 'pipe';
-  
+
   sub pipe {
       my $self = shift;
       bless $self, __PACKAGE__;
       $self->name(shift) if @_;
       return $self->_init;
   }
-  
+
   sub _assert_open {
       my $self = shift;
       return if $self->is_open;
       $self->mode(shift) unless $self->mode;
       $self->open;
   }
-  
+
   sub open {
       my $self = shift;
       $self->is_open(1);
@@ -1898,7 +1898,7 @@ $fatpacked{"IO/All/Pipe.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       CORE::open($self->io_handle, $pipe_mode, $command);
       $self->_set_binmode;
   }
-  
+
   my %mode_msg = (
       '>' => 'output',
       '<' => 'input',
@@ -1914,43 +1914,43 @@ $fatpacked{"IO/All/Pipe.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
         : '';
       return qq{Can't open pipe$name$direction:\n$!};
   }
-  
+
   1;
 IO_ALL_PIPE
 
 $fatpacked{"IO/All/STDIO.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_STDIO';
   use strict; use warnings;
   package IO::All::STDIO;
-  
+
   use IO::All -base;
   use IO::File;
-  
+
   const type => 'stdio';
-  
+
   sub stdio {
       my $self = shift;
       bless $self, __PACKAGE__;
       return $self->_init;
   }
-  
+
   sub stdin {
       my $self = shift;
       $self->open('<');
       return $self;
   }
-  
+
   sub stdout {
       my $self = shift;
       $self->open('>');
       return $self;
   }
-  
+
   sub stderr {
       my $self = shift;
       $self->open_stderr;
       return $self;
   }
-  
+
   sub open {
       my $self = shift;
       $self->is_open(1);
@@ -1962,26 +1962,26 @@ $fatpacked{"IO/All/STDIO.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO
       $self->io_handle->fdopen($fileno, $mode);
       $self->_set_binmode;
   }
-  
+
   sub open_stderr {
       my $self = shift;
       $self->is_open(1);
       $self->io_handle(IO::File->new);
       $self->io_handle->fdopen(fileno(STDERR), '>') ? $self : 0;
   }
-  
+
   # XXX Add overload support
-  
+
   1;
 IO_ALL_STDIO
 
 $fatpacked{"IO/All/Socket.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_SOCKET';
   use strict; use warnings;
   package IO::All::Socket;
-  
+
   use IO::All -base;
   use IO::Socket;
-  
+
   const type => 'socket';
   field _listen => undef;
   option 'fork';
@@ -1990,21 +1990,21 @@ $fatpacked{"IO/All/Socket.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'I
   chain port => undef;
   proxy_open 'recv';
   proxy_open 'send';
-  
+
   sub socket {
       my $self = shift;
       bless $self, __PACKAGE__;
       $self->name(shift) if @_;
       return $self->_init;
   }
-  
+
   sub socket_handle {
       my $self = shift;
       bless $self, __PACKAGE__;
       $self->_handle(shift) if @_;
       return $self->_init;
   }
-  
+
   sub accept {
       my $self = shift;
       use POSIX ":sys_wait_h";
@@ -2035,7 +2035,7 @@ $fatpacked{"IO/All/Socket.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'I
       $io->is_open(1);
       return $io;
   }
-  
+
   sub shutdown {
       my $self = shift;
       my $how = @_ ? shift : 2;
@@ -2043,14 +2043,14 @@ $fatpacked{"IO/All/Socket.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'I
       $handle->shutdown(2)
         if defined $handle;
   }
-  
+
   sub _assert_open {
       my $self = shift;
       return if $self->is_open;
       $self->mode(shift) unless $self->mode;
       $self->open;
   }
-  
+
   sub open {
       my $self = shift;
       return if $self->is_open;
@@ -2074,7 +2074,7 @@ $fatpacked{"IO/All/Socket.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'I
       $self->io_handle($socket);
       $self->_set_binmode;
   }
-  
+
   sub get_socket_domain_port {
       my $self = shift;
       my ($domain, $port);
@@ -2085,7 +2085,7 @@ $fatpacked{"IO/All/Socket.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'I
       $self->port($port) unless defined $self->port;
       return $self;
   }
-  
+
   sub _overload_table {
       my $self = shift;
       (
@@ -2093,7 +2093,7 @@ $fatpacked{"IO/All/Socket.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'I
           '&{} socket' => '_overload_socket_as_code',
       )
   }
-  
+
   sub _overload_socket_as_code {
       my $self = shift;
       sub {
@@ -2104,45 +2104,45 @@ $fatpacked{"IO/All/Socket.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'I
           }
       }
   }
-  
+
   sub _overload_any_from_any {
       my $self = shift;
       $self->SUPER::_overload_any_from_any(@_);
       $self->close;
   }
-  
+
   sub _overload_any_to_any {
       my $self = shift;
       $self->SUPER::_overload_any_to_any(@_);
       $self->close;
   }
-  
+
   1;
 IO_ALL_SOCKET
 
 $fatpacked{"IO/All/String.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_STRING';
   use strict; use warnings;
   package IO::All::String;
-  
+
   use IO::All -base;
-  
+
   const type => 'string';
-  
+
   sub string_ref {
      my ($self, $ref) = @_;
-  
+
      no strict 'refs';
      *$self->{ref} = $ref if exists $_[1];
-  
+
      return *$self->{ref}
   }
-  
+
   sub string {
       my $self = shift;
       bless $self, __PACKAGE__;
       $self->_init;
   }
-  
+
   sub open {
       my $self = shift;
       my $str = '';
@@ -2153,16 +2153,16 @@ $fatpacked{"IO/All/String.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'I
       $self->_set_binmode;
       $self->is_open(1);
   }
-  
+
   1;
 IO_ALL_STRING
 
 $fatpacked{"IO/All/Temp.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_ALL_TEMP';
   use strict; use warnings;
   package IO::All::Temp;
-  
+
   use IO::All::File -base;
-  
+
   sub temp {
       my $self = shift;
       bless $self, __PACKAGE__;
@@ -2174,7 +2174,7 @@ $fatpacked{"IO/All/Temp.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'IO_
       $self->is_open(1);
       return $self;
   }
-  
+
   1;
 IO_ALL_TEMP
 
@@ -2182,66 +2182,66 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
   use 5.005;
   package Term::ANSIScreen;
   $Term::ANSIScreen::VERSION = '1.50';
-  
+
   use strict;
   use vars qw/@ISA @EXPORT %EXPORT_TAGS $VERSION $AUTOLOAD
               %attributes %attributes_r %sequences $AUTORESET $EACHLINE/;
   use Exporter;
-  
+
   =head1 NAME
-  
+
   Term::ANSIScreen - Terminal control using ANSI escape sequences
-  
+
   =head1 SYNOPSIS
-  
+
       # qw/:color/ is exported by default, i.e. color() & colored()
-  
+
       use Term::ANSIScreen qw/:color :cursor :screen :keyboard/;
-  
+
       print setmode(1), setkey('a','b');
       print "40x25 mode now, with 'a' mapped to 'b'.";
       <STDIN>; resetkey; setmode 3; cls;
-  
+
       locate 1, 1; print "@ This is (1,1)", savepos;
       print locate(24,60), "@ This is (24,60)"; loadpos;
       print down(2), clline, "@ This is (3,15)\n";
-  
+
       setscroll 1, 20;
-  
+
       color 'black on white'; clline;
       print "This line is black on white.\n";
       print color 'reset'; print "This text is normal.\n";
-  
+
       print colored ("This text is bold blue.\n", 'bold blue');
       print "This text is normal.\n";
       print colored ['bold blue'], "This text is bold blue.\n";
       print "This text is normal.\n";
-  
+
       use Term::ANSIScreen qw/:constants/; # constants mode
       print BLUE ON GREEN . "Blue on green.\n";
-  
+
       $Term::ANSIScreen::AUTORESET = 1;
       print BOLD GREEN . ON_BLUE "Bold green on blue.", CLEAR;
       print "\nThis text is normal.\n";
-  
+
       # Win32::Console emulation mode
       # this returns a Win32::Console object on a Win32 platform
       my $console = Term::ANSIScreen->new;
       $console->Cls;	# also works on non-Win32 platform
-  
+
   =cut
-  
+
   # -----------------------
   # Internal data structure
   # -----------------------
-  
+
   %attributes = (
       'clear'      => 0,    'reset'      => 0,
       'bold'       => 1,    'dark'       => 2,
       'underline'  => 4,    'underscore' => 4,
       'blink'      => 5,    'reverse'    => 7,
       'concealed'  => 8,
-  
+
       'black'      => 30,   'on_black'   => 40,
       'red'        => 31,   'on_red'     => 41,
       'green'      => 32,   'on_green'   => 42,
@@ -2251,7 +2251,7 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
       'cyan'       => 36,   'on_cyan'    => 46,
       'white'      => 37,   'on_white'   => 47,
   );
-  
+
   %sequences = (
       'up'        => '?A',      'down'      => '?B',
       'right'     => '?C',      'left'      => '?D',
@@ -2262,13 +2262,13 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
       'wrapon'    => '7h',      'wrapoff'   => '7l',
       'setscroll'	=> '?;?r',
   );
-  
+
   my %mapped;
-  
+
   # ----------------
   # Exporter section
   # ----------------
-  
+
   @ISA         = qw/Exporter/;
   %EXPORT_TAGS = (
       'color'     => [qw/color colored uncolor/],
@@ -2277,19 +2277,19 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
       'keyboard'  => [qw/setkey resetkey/],
       'constants' => [map {uc($_)} keys(%attributes), 'ON'],
   );
-  
+
   $EXPORT_TAGS{all} = [map {@{$_}} values (%EXPORT_TAGS)];
-  
+
   @EXPORT = qw(color colored);
   Exporter::export_ok_tags (keys(%EXPORT_TAGS));
-  
+
   sub new {
       my $class = shift;
-  
+
       if ($^O eq 'MSWin32' and eval { require Win32::Console } ) {
           return Win32::Console->new(@_);
       }
-  
+
       no strict 'refs';
       unless ($main::FG_WHITE) {
           foreach my $color (grep { $attributes{$_} >= 30 } keys %attributes) {
@@ -2304,45 +2304,45 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
           $main::FG_YELLOW     = $main::FG_LIGHTYELLOW;
           $main::FG_WHITE      = color('clear');
       }
-      
+
       return bless([ @_ ], $class);
   }
-  
+
   sub Attr {
       shift;
       print STDERR @_;
   }
-  
+
   sub Cls {
       print STDERR cls();
   }
-  
+
   sub Cursor {
       shift;
       print STDERR locate($_[1]+1, $_[0]+1);
   }
-  
+
   sub Write {
       shift;
       print STDERR @_;
   }
-  
+
   sub Display {
   }
-  
-  
+
+
   # --------------
   # Implementation
   # --------------
-  
+
   sub AUTOLOAD {
       my $enable_colors = !defined $ENV{ANSI_COLORS_DISABLED};
       my $sub = $AUTOLOAD;
       $sub =~ s/^.*:://;
-  
+
       if (my $seq = $sequences{$sub}) {
   	return '' unless $enable_colors;
-  
+
           $seq =~ s/\?/defined($_[0]) ? shift(@_) : 1/eg;
           return((defined wantarray) ? "\e[$seq"
                                      : print("\e[$seq"));
@@ -2361,34 +2361,34 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
           Carp::croak("Undefined subroutine &$AUTOLOAD called");
       }
   }
-  
+
   # ------------------------------------------------
   # Convert foreground constants to background ones,
   # for sequences like (XXX ON YYY "text")
   # ------------------------------------------------
-  
+
   sub ON {
       return '' if defined $ENV{ANSI_COLORS_DISABLED};
-  
+
       my $out = "@_";
       $out =~ s/^\e\[3(\d)m/\e\[4$1m/;
       return $out;
   }
-  
+
   # ---------------------------------------
   # Color subroutines, from Term::ANSIColor
   # ---------------------------------------
-  
+
   sub color {
       return '' if defined $ENV{ANSI_COLORS_DISABLED};
-  
+
       my @codes = map { split } @_;
       my $attribute;
-  
+
       no warnings 'uninitialized';
       while (my $code = lc(shift(@codes))) {
           $code .= '_' . shift(@codes) if ($code eq 'on');
-  
+
           if (defined $attributes{$code}) {
               $attribute .= $attributes{$code} . ';';
           }
@@ -2396,22 +2396,22 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
               warn "Invalid attribute name $code";
           }
       }
-  
+
       if ($attribute) {
           chop $attribute;
           return (defined wantarray) ? "\e[${attribute}m"
                                      : print("\e[${attribute}m");
       }
   }
-  
+
   sub colored {
       my $output;
       my ($string, $attr) = (ref $_[0])
           ? (join('', @_[1..$#_]), color(@{$_[0]}))
           : (+shift, color(@_));
-  
+
       return $string if defined $ENV{ANSI_COLORS_DISABLED};
-  
+
       if (defined $EACHLINE) {
           $output  = join '',
               map { ($_ && $_ ne $EACHLINE) ? $attr . $_ . "\e[0m" : $_ }
@@ -2419,14 +2419,14 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
       } else {
           $output = "$attr$string\e[0m";
       }
-  
+
       return (defined wantarray) ? $output
                                  : print($output);
   }
-  
+
   sub uncolor {
       my (@nums, @result);
-  
+
       foreach my $seq (@_) {
           my $escape = $seq;
           $escape =~ s/^\e\[//;
@@ -2437,9 +2437,9 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
           }
           push (@nums, split (/;/, $1));
       }
-  
+
       _init_attributes_r();
-  
+
       foreach my $num (@nums) {
           $num += 0; # Strip leading zeroes
           my $name = $attributes_r{$num};
@@ -2449,134 +2449,134 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
           }
           push (@result, $name);
       }
-  
+
       return @result;
   }
-  
+
   sub _init_attributes_r {
       return if %attributes_r;
-  
+
       # Reverse lookup.  Alphabetically first name for a sequence is preferred.
       for (reverse sort keys %attributes) {
   	$attributes_r{$attributes{$_}} = $_;
       }
   }
-  
+
   sub setkey {
       my ($key, $mapto) = @_;
-  
+
       if ($key eq $mapto) {
           delete $mapped{$key} if exists $mapped{$key};
       }
       else {
           $mapped{$key} = 1;
       }
-  
+
       $key   = ord($key)    unless ($key =~ /^\d+;\d+$/);
       $mapto = qq("$mapto") unless ($mapto =~ /^\d+;\d+$/);
-  
+
       return (defined wantarray) ? "\e[$key;${mapto}p"
                                  : print("\e[$key;${mapto}p");
   }
-  
+
   sub resetkey {
       my $output;
-  
+
       foreach my $key (@_ ? @_ : keys(%mapped)) {
           $output .= setkey($key, $key);
       }
-  
+
       return (defined wantarray) ? $output
                                  : print($output);
   }
-  
+
   sub DESTROY {
       return;
   }
-  
+
   1;
-  
+
   __END__
-  
+
   =head1 DESCRIPTION
-  
+
   Term::ANSIScreen is a superset of B<Term::ANSIColor> (as of version 1.04
   of that module).  In addition to color-sequence generating subroutines
   exported by C<:color> and C<:constants>, this module also features
   C<:cursor> for cursor positioning, C<:screen> for screen control, as
   well as C<:keyboard> for key mapping.
-  
+
   =head2 NOTES
-  
+
   =over 4
-  
+
   =item *
-  
+
   All subroutines in B<Term::ANSIScreen> will print its return value if
   called under a void context.
-  
+
   =item *
-  
+
   The cursor position, current color, screen mode and keyboard
   mappings affected by B<Term::ANSIScreen> will last after the program
   terminates. You might want to reset them before the end of
   your program.
-  
+
   =back
-  
+
   =head1 FUNCTIONS
-  
+
   =head2 B<Win32::Console> emulation mode
-  
+
   When used in a object-oriented fashion, B<Term::ANSIScreen> acts as a
   B<Win32::Console> clone:
-  
+
       use Term::ANSIScreen;
       my $console = Term::ANSIScreen->new;
       $console->Cls();		# unbuffered
       $console->Cursor(0, 0);	# same as locate(1, 1)
       $console->Display();	# really a no-op
-  
+
   On the Win32 platform, the C<new> constructor simply returns a geniune
   B<Win32::Console> object, if that module exists in the system.
-  
+
   This feature is intended for people who has to port Win32 console
   applications to other platforms, or to write cross-platform application
   that needs terminal controls.
-  
+
   =head2 The C<:color> function set (exported by default)
-  
+
   B<Term::ANSIScreen> recognizes (case-insensitively) following color
   attributes: clear, reset, bold, underline, underscore, blink,
   reverse, concealed, black, red, green, blue, white, yellow, magenta,
   cyan, on_black, on_red, on_green, on_blue, on_white, on_yellow,
   on_magenta, and on_cyan.
-  
+
   The color alone sets the foreground color, and on_color sets
   the background color. You may also use on_color without the
   underscore, e.g. "black on white".
-  
+
   =over 4
-  
+
   =item color LIST
-  
+
   Takes any number of strings as arguments and considers them
   to be space-separated lists of attributes.  It then forms
   and returns the escape sequence to set those attributes.
-  
+
   =item colored EXPR, LIST
-  
+
   Takes a scalar as the first argument and any number of
   attribute strings as the second argument, then returns the
   scalar wrapped in escape codes so that the attributes will
   be set as requested before the string and reset to normal
   after the string.
-  
+
   Alternately, you can pass a reference to an array as the
   first argument, and then the contents of that array will
   be taken as attributes and color codes and the remainder
   of the arguments as text to colorize.
-  
+
   Normally, this function just puts attribute codes at the
   beginning and end of the string, but if you set
   $Term::ANSIScreen::EACHLINE to some string, that string will
@@ -2585,97 +2585,97 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
   at the end of each line.  This is often desirable if the
   output is being sent to a program like a pager, which can
   be confused by attributes that span lines.
-  
+
   Normally you'll want to set C<$Term::ANSIScreen::EACHLINE> to
   C<"\n"> to use this feature.
-  
+
   =back
-  
+
   =head2 The C<:constants> function set
-  
+
   If you import C<:constants> you can use the constants CLEAR,
   RESET, BOLD, UNDERLINE, UNDERSCORE, BLINK, REVERSE, CONCEALED,
   BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, ON_BLACK, ON_RED,
   ON_GREEN, ON_YELLOW, ON_BLUE, ON_MAGENTA, ON_CYAN, and ON_WHITE
   directly.  These are the same as color('attribute') and can be
   used if you prefer typing:
-  
+
       print BOLD BLUE ON_WHITE "Text\n", RESET;
       print BOLD BLUE ON WHITE "Text\n", RESET; # _ is optional
-  
+
   to
       print colored ("Text\n", 'bold blue on_white');
-  
+
   When using the constants, if you don't want to have to remember
   to add the C<, RESET> at the end of each print line, you can set
   C<$Term::ANSIScreen::AUTORESET> to a true value.  Then, the display
   mode will automatically be reset if there is no comma after the
   constant.  In other words, with that variable set:
-  
+
       print BOLD BLUE "Text\n";
-  
+
   will reset the display mode afterwards, whereas:
-  
+
       print BOLD, BLUE, "Text\n";
-  
+
   will not.
-  
+
   =head2 The C<:cursor> function set
-  
+
   =over 4
-  
+
   =item locate [EXPR, EXPR]
-  
+
   Sets the cursor position. The first argument is its row number,
   and the second one its column number.  If omitted, the cursor
   will be located at (1,1).
-  
+
   =item up    [EXPR]
-  
+
   =item down  [EXPR]
-  
+
   =item left  [EXPR]
-  
+
   =item right [EXPR]
-  
+
   Moves the cursor toward any direction for EXPR characters. If
   omitted, EXPR is 1.
-  
+
   =item savepos
-  
+
   =item loadpos
-  
+
   Saves/restores the current cursor position.
-  
+
   =back
-  
+
   =head2 The C<:screen> function set
-  
+
   =over 4
-  
+
   =item cls
-  
+
   Clears the screen with the current background color, and set
   cursor to (1,1).
-  
+
   =item clline
-  
+
   Clears the current row with the current background color, and
   set cursor to the 1st column.
-  
+
   =item clup
-  
+
   Clears everything above the cursor.
-  
+
   =item cldown
-  
+
   Clears everything below the cursor.
-  
+
   =item setmode EXPR
-  
+
   Sets the screen mode to EXPR. Under DOS, ANSI.SYS recognizes
   following values:
-  
+
        0:  40 x  25 x   2 (text)   1:  40 x  25 x 16 (text)
        2:  80 x  25 x   2 (text)   3:  80 x  25 x 16 (text)
        4: 320 x 200 x   4          5: 320 x 200 x  2
@@ -2684,100 +2684,100 @@ $fatpacked{"Term/ANSIScreen.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<
       15: 640 x 350 x   2         16: 640 x 350 x 16
       17: 640 x 480 x   2         18: 640 x 480 x 16
       19: 320 x 200 x 256
-  
+
   =item wrapon
-  
+
   =item wrapoff
-  
+
   Enables/disables the line-wraping mode.
-  
+
   =item setscroll EXPR, EXPR
-  
+
   Causes scrolling to occur only on the lines numbered between
   the first and second arguments, inclusive.
-  
+
   =back
-  
+
   =head2 The C<:keyboard> function set
-  
+
   =over 4
-  
+
   =item setkey EXPR, EXPR
-  
+
   Takes a scalar representing a single keystroke as the first
   argument (either a character or an escape sequence in the
   form of C<"num1;num2">), and maps it to a string defined by
   the second argument.  Afterwards, when the user presses the
   mapped key, the string will get outputed instead.
-  
+
   =item resetkey [LIST]
-  
+
   Resets each keys in the argument list to its original mapping.
   If called without an argument, resets all previously mapped
   keys.
-  
+
   =back
-  
+
   =head1 DIAGNOSTICS
-  
+
   =over 4
-  
+
   =item Invalid attribute name %s
-  
+
   You passed an invalid attribute name to either color() or
   colored().
-  
+
   =item Identifier %s used only once: possible typo
-  
+
   You probably mistyped a constant color name such as:
-  
+
       print FOOBAR "This text is color FOOBAR\n";
-  
+
   It's probably better to always use commas after constant names
   in order to force the next error.
-  
+
   =item No comma allowed after filehandle
-  
+
   You probably mistyped a constant color name such as:
-  
+
       print FOOBAR, "This text is color FOOBAR\n";
-  
+
   Generating this fatal compile error is one of the main advantages
   of using the constants interface, since you'll immediately know
   if you mistype a color name.
-  
+
   =item Bareword %s not allowed while "strict subs" in use
-  
+
   You probably mistyped a constant color name such as:
-  
+
       $Foobar = FOOBAR . "This line should be blue\n";
-  
+
   or:
-  
+
       @Foobar = FOOBAR, "This line should be blue\n";
-  
+
   This will only show up under use strict (another good reason
   to run under use strict).
-  
+
   =back
-  
+
   =head1 SEE ALSO
-  
+
   L<Term::ANSIColor>, L<Win32::Console>
-  
+
   =head1 AUTHORS
-  
+
   唐鳳 E<lt>cpan@audreyt.orgE<gt>
-  
+
   =head1 CC0 1.0 Universal
-  
+
   To the extent possible under law, 唐鳳 has waived all copyright and related
   or neighboring rights to Term-ANSIScreen.
-  
+
   This work is published from Taiwan.
-  
+
   L<http://creativecommons.org/publicdomain/zero/1.0>
-  
+
   =cut
 TERM_ANSISCREEN
 
@@ -2786,7 +2786,7 @@ $fatpacked{"Text/FIGlet.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEX
   use strict;
   use vars qw'$VERSION %RE';
   $VERSION = '2.19.4';           #Actual code version: 2.19.1
-  
+
                                  #~50us penalty w/ 2 constant calls for 5.005
   use constant PRIVb => 0xF0000; #Map neg chars into Unicode's private area
   use constant PRIVe => 0xFFFFD; #0-31 are also available but unused.
@@ -2796,8 +2796,8 @@ $fatpacked{"Text/FIGlet.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEX
   use Text::FIGlet::Control;
   use Text::FIGlet::Font;
   use Text::FIGlet::Ransom;
-  
-  
+
+
   if( $] >= 5.008 ){
       require Encode; #Run-time rather than compile-time, without an eval
       import Encode;
@@ -2812,8 +2812,8 @@ $fatpacked{"Text/FIGlet.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEX
       local $^W = 0;
       eval "sub _utf8_on{}; sub Encode::_utf8_off{};";
   }
-  
-  
+
+
   my $thByte = '[\x80-\xBF]';
   %RE = (
          #XXX Should perhaps put 1 byte UTF-8 last as . instead, to catch ANSI
@@ -2822,26 +2822,26 @@ $fatpacked{"Text/FIGlet.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEX
          bytechar=> qr/(.)/s,
          no      => qr/(-?)((0?)(?:x[\da-fA-F]+|\d+))/,
          );
-  
-  
+
+
   sub import{
     @_ = qw/UTF8chr UTF8ord UTF8len/ if grep(/:Encode/, @_);
-  
+
     if( @_ ) {
       no strict 'refs';
       *{scalar(caller).'::'.$_} = $_ for grep/UTF8chr|UTF8ord|UTF8len/, @_;
     }
   }
-  
-  
+
+
   sub new {
     local $_;
     my $proto = shift;
     my %opt = @_;
     my($class, @isect, %count);
     my %class = (-f => 'Font', -C => 'Control');
-  
-  
+
+
     if( ref($opt{-f}) =~ /ARRAY|HASH/ ){
         $class = 'Text::FIGlet::Ransom';
     }
@@ -2853,21 +2853,21 @@ $fatpacked{"Text/FIGlet.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEX
     }
     $class->new(@_);
   }
-  
-  
+
+
   sub UTF8chr{
     my $ord = shift || $_;
     my @n;
-  
+
     #x00-x7f        #1 byte
-    if( $ord < 0x80 ){ 
+    if( $ord < 0x80 ){
       @n = $ord; }
     #x80-x7ff       #2 bytes
     elsif( $ord < 0x800 ){
       @n  = (0xc0|$ord>>6, 0x80|$ord&0x3F ); }
     #x800-xffff     #3 bytes
     elsif( $ord < 0x10000 ){
-      @n  = (0xe0|$ord>>12, 
+      @n  = (0xe0|$ord>>12,
   	   0x80|($ord>>6)&0x3F,
   	   0x80|$ord&0x3F ); }
     #x10000-x10ffff #4 bytes
@@ -2878,25 +2878,25 @@ $fatpacked{"Text/FIGlet.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEX
   	  0x80|$ord&0x3F); }
     else{
       warn "Out of range for UTF-8: $ord"; }
-  
+
     return pack "C*", @n;
   }
-  
-  
+
+
   sub UTF8len{
     my $str = shift || $_;
     my $count = () = $str =~ m/$Text::FIGlet::RE{UTFchar}/g;
   }
-  
-  
+
+
   sub UTF8ord{
     my $str = shift || $_;
     my $len = length ($str);
-  
+
     return ord($str) if $len == 1;
     #This is a FIGlet specific error value
     return 128       if $len > 4 || $len == 0;
-  
+
     my @n = unpack "C*", $str;
     $str  = (($n[-2] & 0x3F) <<  6) + ($n[-1] & 0x3F);
     $str += (($n[-3] & 0x1F) << 12) if $len ==3;
@@ -2904,196 +2904,196 @@ $fatpacked{"Text/FIGlet.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEX
     $str += (($n[-4] & 0x0F) << 18) if $len == 4;
     return $str;
   }
-  
-  
+
+
   sub _no{
     my($one, $two, $thr, $over) = @_;
-  
+
     my $val = ($one ? -1 : 1) * ( $thr eq 0 ? oct($two) : $two);
-  
+
     #+2 is to map -2 to offset zero (-1 is forbidden, modern systems have no -0)
     $val += PRIVe + 2 if $one;
     if( $one && $over && $val < PRIVb ){
       carp("Extended character out of bounds");
       return 0;
     }
-  
+
     $val;
   }
-  
-  
+
+
   sub _canonical{
     my($defdir, $usrfile, $extre, $backslash) = @_;
     return -e $usrfile ? $usrfile :
         File::Spec->catfile($defdir, $usrfile);
-  
+
     #Dragons be here, was for pseudo-Windows tests/old Perls?
-  
+
     #Split things up
     my($file, $path, $ext) = fileparse($usrfile, $extre);
-  
+
     $path =~ y/\\/\// if $backslash;
-  
+
     #Handle paths relative to current directory
     my $curdir = File::Spec->catfile(File::Spec->curdir, "");
     $path = $defdir if $path eq $curdir && index($usrfile, $curdir) < 0;
-  
-  
+
+
     #return canonicaled path
     return File::Spec->catfile($path, $file.$ext);
   }
-  
+
   local $_="Act kind of random and practice less beauty sense --ginoh";
-  
+
   __END__
-  
+
   =pod
-  
+
   =head1 NAME
-  
+
   Text::FIGlet -  provide FIGlet abilities, akin to banner i.e; ASCII art
-  
+
   =head1 SYNOPSIS
-  
+
    my $font = Text::FIGlet-E<gt>new(-f=>"doh");
    $font->figify(-A=>"Hello World");
-  
+
   =head1 DESCRIPTION
-  
+
   Text::FIGlet reproduces its input using large characters made up of
   other characters; usually ASCII, but not necessarily. The output is similar
   to that of many banner programs--although it is not oriented sideways--and
   reminiscent of the sort of I<signatures> many people like to put at the end
   of e-mail and UseNet messages.
-  
+
   Text::FIGlet can print in a variety of fonts, both left-to-right and
   right-to-left, with adjacent characters kerned and I<smushed> together in
   various ways. FIGlet fonts are stored in separate files, which can be
   identified by the suffix I<.flf>. Most FIGlet font files will be stored in
   FIGlet's default font directory F</usr/games/lib/figlet>. Support for TOIlet
   fonts I<*.tlf>, which are typically in the same location, has also been added.
-  
+
   Text::FIGlet can also use control files, which tell it to map input characters
   to others, similar to the Unix tr command. Control files can be identified by
   the suffix I<.flc>. Most control files will be stored with the system fonts,
   as some fonts use control files to provide access to foreign character sets.
-  
+
   =head1 OPTIONS
-  
+
   C<new>
-  
+
   =over
-  
+
   =item B<-C=E<gt>>F<controlfile>
-  
+
   Creates a control object. L<Text::File::Control> for control object specific
   options to new, and how to use the object.
-  
+
   =item B<-f=E<gt>>F<fontfile> | I<\@fonts> | I<\%fonts>
-  
+
   Loads F<fontfile> if specified, and creates a font object.
   L<Text::File::Font> for font object specific options to new,
   and how to use the object.
-  
+
   With the other forms of B<-f>, a number of fonts can be loaded and blended
   into a single font as a L<Text::FIGlet::Ransom> object.
-  
+
   =item B<-d=E<gt>>F<fontdir>
-  
+
   Whence to load files.
-  
+
   Defaults to F</usr/games/lib/figlet>
-  
+
   =back
-  
+
   F<fontfile> and F<controlfile> can be the (absolute or relative) path to the
   specified file, or simply the name of a file (with or without an extension)
   present in B<-d>.
-  
+
   C<new> with no options will create a font object using the default font.
-  
+
   =head1 EXAMPLES
-  
+
     perl -MText::FIGlet -e 'print ~~Text::FIGlet->new()->figify(-A=>"Hello World")'
-  
+
   To generate headings for webserver directory listings,
   for that warm and fuzzy BBS feeling.
-  
+
   Text based clocks or counters at the bottom of web pages.
-  
+
   Anti-bot obfuscation a la L</AUTHOR>.
-  
+
   =head2 Other Things to Try
-  
+
   A variety of interesting effects can be obtained from dot-matrix-like fonts
   such as lean and block by passing them through C<tr>. Hare are some to try:
-  
+
     tr/|/]/
     tr[ _/][ ()]
     tr[ _/][./\\]
     tr[ _/][ //]
     tr[ _/][/  ]
-  
+
   If you're using FIGlet as some sort of CAPTCHA, or you'd just like a starry
   background for your text, you might consider adding noise to the results
   of figify e.g;
-  
+
     #50% chance of replacing a space with an x
     s/( )/rand()>.5?$1:x/eg
-  
+
     #50% chance of replacing a space with an entry from @F
     @F = qw/. x */; s/( )/$F[scalar@F*2*rand()]||$1/eg;
-  
+
     #5% chance of substituting a random ASCII character
     #Note that this may yield unpleasant results if UTF is involved
     s/(.)/rand()<.05?chr(32+rand(94)):$1/eg
-  
+
   =head1 ENVIRONMENT
-  
+
   B<Text::FIGlet> will make use of these environment variables if present
-  
+
   =over
-  
+
   =item FIGFONT
-  
+
   The default font to load. If undefined the default is F<standard.flf>.
   It should reside in the directory specified by FIGLIB.
-  
+
   =item FIGLIB
-  
+
   The default location of fonts.
   If undefined the default is F</usr/games/lib/figlet>
-  
+
   =back
-  
+
   =head1 FILES
-  
+
   FIGlet font files and control files are available at
-  
+
     http://www.figlet.org/fontdb.cgi
-   
+
   =head1 SEE ALSO
-  
+
   Module architecture: L<http://pthbb.org/manual/software/perl/T-F/>
-  
+
   Animated FIGlet: L<Acme::Curses::Marquee::Extensions>
-  
+
   Ancestors: L<figlet(6)> L<http://www.figlet.org>, L<banner(6)>, L<Text::Banner>
-  
+
   =head1 NOTES
-  
+
   If you are using perl 5.005 and wish to try to acces Unicode characters
   programatically, or are frustrated by perl 5.6's Unicode support, you may
   try importing C<UTF8chr> from this module.
-  
+
   This module also offers C<UTF8ord> and C<UTF8len>, which are used internally,
   but may be of general use. To import all three functions, use the B<:Encode>
   import tag. C<UTF8len> does not count control characters (0x00-0x19)!
-  
+
   =head1 AUTHOR
-  
+
   Jerrad Pierce
-  
+
                   **                                    />>
        _         //                         _  _  _    / >>>
       (_)         **  ,adPPYba,  >< ><<<  _(_)(_)(_)  /   >>>
@@ -3104,7 +3104,7 @@ $fatpacked{"Text/FIGlet.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<<'TEX
                  //                                  >>>>    /
                                                       >>>>>>/
                                                        >>>>>
-  
+
   =cut
 TEXT_FIGLET
 
@@ -3114,18 +3114,18 @@ $fatpacked{"Text/FIGlet/Control.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n
   use vars '$VERSION';
   use Carp 'croak';
   $VERSION = 2.15;
-  
+
   #'import' core support functions from parent with circular dependency
   foreach( qw/_canonical _no/){
     no strict 'refs';
     *$_ = *{'Text::FIGlet::'.$_};
   }
-  
+
   sub new{
     my $proto = shift;
     my $self = {-C=>[]};
     local($_, *FLC);
-  
+
     my $code = '';
     my(@t_pre, @t_post);
     while( @_ ){
@@ -3137,10 +3137,10 @@ $fatpacked{"Text/FIGlet/Control.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n
     }
     $self->{-d} ||= $ENV{FIGLIB}  || '/usr/games/lib/figlet/';
     $self->{"_\\"} = 1 if $^O =~ /MSWin32|DOS/i;
-  
-  
+
+
   #  my $no = qr/0x[\da-fA-F]+|\d+/;
-  
+
     foreach my $flc ( @{$self->{-C}} ){
       $self->{'_file'} = _canonical($self->{-d},
   						$flc,
@@ -3149,13 +3149,13 @@ $fatpacked{"Text/FIGlet/Control.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n
       open(FLC, $self->{'_file'}) || croak("$!: $flc [$self->{_file}]");
       while(<FLC>){
         next if /^flc2a|\s*#|^\s*$/;
-  
+
         #XXX Is this adequate?
         $code .= 'use utf8;' if /^\s*u/;
-  
+
         if( /^\s*$Text::FIGlet::RE{no}\s+$Text::FIGlet::RE{no}\s*/ ){
   	#Only needed for decimals?!
-  
+
   	push @t_pre,  sprintf('\\x{%x}', _no($1, $2, $3));
   	push @t_post, sprintf('\\x{%x}', _no($4, $5, $6));
         }
@@ -3180,7 +3180,7 @@ $fatpacked{"Text/FIGlet/Control.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n
     $self->{_sub} = eval "sub { local \$_ = shift; $code; return \$_ }";
     bless($self);
   }
-  
+
   sub tr($){
     my $self = shift;
     $self->{_sub}->( shift || $_ );
@@ -3188,121 +3188,121 @@ $fatpacked{"Text/FIGlet/Control.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n
   1;
   __END__
   =pod
-  
+
   =head1 NAME
-  
+
   Text::FIGlet::Control - control file support for Text::FIGlet
-  
+
   =head1 SYNOPSIS
-  
+
     use Text::FIGlet;
-  
+
     my $flc = Text::FIGlet->new(-C=>'upper.flc');
-  
+
     print $flc->tr("Hello World");
-  
+
   =head1 DESCRIPTION
-  
+
   Text::FIGlet::Control uses control files, which tell it to
   map certain input characters to certain other characters,
   similar to the Unix tr command. Control files can be
   identified by the suffix I<.flc>. Most Text::FIGlet::Control
   control files will be stored in FIGlet's default font directory.
-  
+
   The following control file commands are supported, for more
   detail see F<figfont.txt> included with this distribution.
-  
+
   =over
-  
+
   =item f Freeze
-  
+
   A kind of "save state",
   executes all previously accumulated translations before continuing.
-  
+
   =item t Translate
-  
+
   Both the explicit forms "t in out" and "t in-range out-range"
   as well as the implicit form "number number".
-  
+
   B<Note that if you are mapping in negative characters,
   you will need to C<figify> in Unicode mode I<-U>>. See also B<u> below.
-  
+
   =item u Unicode
-  
+
   Process text as Unicode (UTF-8).
-  
+
   Note that this is required for perl 5.6 if you are doing negative mapping.
-  
+
   =back
-  
+
   =head1 OPTIONS
-  
+
   =head2 C<new>
-  
+
   =over
-  
+
   =item B<-C=E<gt>>F<controlfile>
-  
+
   Control objects are used to peform various text translations specified
   by an I<flc> file.
-  
+
     $_ = "Hello World";
     my $flc = Text::FIGlet::Control->new(-C=>'rot13');
     print $font->figify($flc->());
     #The text "Urryb Jbeyq" is output.
-  
+
   Multiple -C parameters may be passed, and the object
   returned will be an aggregate of the specified controls.
-  
+
     my $flc  = Text::FIGlet::Control->new(-C=>'upper', -C=>'rot13');
     my $out0 = $flc->();
     #The text "uRRYB jBEYQ" is output.
-  
+
     #This is equivalent
     my $flc1  = Text::FIGlet::Control->new(-C=>'upper',);
     my $flc2  = Text::FIGlet::Control->new(-C=>'rot13');
     my $out1 = $flc2->($flc1->();
-  
+
     #So is this
     my $out2 = $flc1->($flc2->());
     #NOTE: Controls are not commutative.
     #Order of chained controls is only
     #insignificant for some controls.
-  
+
   =back
-  
+
   =head2 C<tr>
-  
+
   =over
-  
+
   =item I<scalar>
-  
+
   Process text in I<scalar>.
-  
+
   =back
-  
+
   =head1 ENVIRONMENT
-  
+
   B<Text::FIGlet::Control>
   will make use of these environment variables if present
-  
+
   =over
-  
+
   =item FIGLIB
-  
+
   The default location of fonts.
   If undefined the default is F</usr/games/lib/figlet>
-  
+
   =back
-  
+
   =head1 FILES
-  
+
   FIGlet control files are available at
-  
+
     ftp://ftp.figlet.org/pub/figlet/
-  
+
   =head1 CAVEATS
-  
+
   There is a mystery bug in perls 5.6.1 and 5.6.2 which can cause seemingly
   simple transliterations to fail. The standard figlet(1) F<upper.flc> is an
   example of such a transliteration. For this reason, the enclosed F<upper.flc>
@@ -3310,15 +3310,15 @@ $fatpacked{"Text/FIGlet/Control.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n
   work. If you experience similar problems with other control files, try some
   shotgun debugging with freezes yourself. Modern perls, 5.6.0 and even 5.005_05
   do not have this problem.
-  
+
   =head1 SEE ALSO
-  
+
   L<Text::FIGlet>, L<figlet(6)>, L<tr(1)>
-  
+
   =head1 AUTHOR
-  
+
   Jerrad Pierce
-  
+
                   **                                    />>
        _         //                         _  _  _    / >>>
       (_)         **  ,adPPYba,  >< ><<<  _(_)(_)(_)  /   >>>
@@ -3329,7 +3329,7 @@ $fatpacked{"Text/FIGlet/Control.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n
                  //                                  >>>>    /
                                                       >>>>>>/
                                                        >>>>>
-  
+
   =cut
 TEXT_FIGLET_CONTROL
 
@@ -3341,14 +3341,14 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
   use Symbol; #5.005 support
   use Text::Wrap;
   $VERSION = '2.19.3';
-  
+
   #'import' core support functions from parent with circular dependency
   foreach( qw/UTF8len UTF8ord _canonical _no _utf8_on/){
     no strict 'refs';
     *$_ = *{'Text::FIGlet::'.$_};
   }
-  
-  
+
+
   sub new{
     shift();
     my $self = {_maxLen=>0, -U=>-1, -m=>-2, @_};
@@ -3358,19 +3358,19 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
     _load_font($self);
     bless($self);
   }
-  
+
   sub _load_font{
     my $self = shift();
     my $font = $self->{_font} = [];
     my(@header, $header, $path, $ext);
     local($_);
-  
+
   #MAGIC minifig0
     $self->{_file} = _canonical($self->{-d}, $self->{-f}, qr/\.[ft]lf/,
   			      $^O =~ /MSWin32|DOS/i);
     #XXX bsd_glob .[ft]lf
     $self->{_file} = (glob($self->{_file}.'.?lf'))[0] unless -e $self->{_file};
-  
+
     #open(FLF, $self->{_file}) || confess("$!: $self->{_file}");
     $self->{_fh} = gensym;            #5.005 support
     eval "use IO::Uncompress::Unzip"; #XXX sniff for 'PK\003\004'instead?
@@ -3385,34 +3385,34 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
         eval "binmode(\$fh, ':encoding(utf8)')" unless $] < 5.006;
     }
   #MAGIC minifig1
-  
+
     my $fh = $self->{_fh};  #5.005 support
     chomp($header = <$fh>); #5.005 hates readline & $self->{_fh} :-/
     confess("Invalid FIGlet 2/TOIlet font") unless $header =~ /^[ft]lf2/;
-  
+
     #flf2ahardblank height up_ht maxlen smushmode cmt_count rtol
     @header = split(/\s+/, $header);
     $header[0] =~ s/^[ft]lf2.//;
     #$header[0] = qr/@{[sprintf "\\%o", ord($header[0])]}/;
     $header[0] = quotemeta($header[0]);
     $self->{_header} = \@header;
-  
+
     if( defined($self->{-m}) && $self->{-m} eq '-2' ){
       $self->{-m} = $header[4];
     }
-  
+
     #Discard comments
     <$fh> for 1 .. $header[5] || cluck("Unexpected end of font file") && last;
-  
+
     #Get ASCII characters
     foreach my $i(32..126){
       &_load_char($self, $i) || last;
     }
-  
+
     #German characters?
     unless( eof($fh) ){
       my %D =(91=>196, 92=>214, 93=>220, 123=>228, 124=>246, 125=>252, 126=>223);
-  
+
       foreach my $k ( sort {$a <=> $b} keys %D ){
         &_load_char($self, $D{$k}) || last;
       }
@@ -3423,18 +3423,18 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
         $#{$font} = 126; #undef($font->[$_]) for values %D;
       }
     }
-  
+
     #ASCII bypass
     close($fh) unless $self->{-U};
-  
+
     #Extended characters, with extra readline to get code
     until( eof($fh) ){
       $_ = <$fh> || cluck("Unexpected end of font file") && last;
-      
+
       /^\s*$Text::FIGlet::RE{no}/;
       last unless $2;
       my $val = _no($1, $2, $3, 1);
-      
+
       #Bypass negative chars?
       if( $val > Text::FIGlet->PRIVb && $self->{-U} == -1 ){
         readline($fh) for 0..$self->{_header}->[1]-1;
@@ -3446,8 +3446,8 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
       }
     }
     close($fh);
-  
-  
+
+
     #Fixed width
     if( defined($self->{-m}) && $self->{-m} == -3 ){
       my $pad;
@@ -3456,11 +3456,11 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
         foreach my $i (-$header[1]..-1){
           #next unless exists($font->[$ord]->[2]); #55compat
           next unless defined($font->[$ord]->[2]);
-  
+
   	# The if protects from a a 5.6(.0)? bug
   	$font->[$ord]->[$i] =~ s/^\s{1,$font->[$ord]->[1]}//
   	  if $font->[$ord]->[1];
-  
+
     	$pad = $self->{_maxLen} - UTF8len($font->[$ord]->[$i]);
   #  	print STDERR "$pad = $self->{_maxLen} - UTF8len($font->[$ord]->[$i]);\n";
     	$font->[$ord]->[$i] = " " x int($pad/2) .
@@ -3495,17 +3495,17 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
       }
     }
   }
-  
-  
+
+
   sub _load_char{
     my($self, $i) = @_;
     my $font = $self->{_font};
     my($length, $wLead, $wTrail, $end, $line, $l) = 0;
-    
+
     $wLead = $wTrail = $self->{_header}->[3];
-  
+
     my $fh = $self->{_fh}; #5.005 support
-    
+
     my $REtrail;
     foreach my $j (0..$self->{_header}->[1]-1){
       $line = $_ = <$fh> ||
@@ -3535,7 +3535,7 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
     }
     #XXX :-/ stop trying at 125 in case of charmap in ~ or extended....
     $self->{_maxLen} = $length if $i < 126 && $self->{_maxLen} < $length;
-  
+
     #Ideally this would be /o but then all figchar's must have same EOL
     $font->[$i] =~ s/\015|\Q$end\E{1,2}\s*\r?$//mg;
     $font->[$i] = [$length,#maxLen
@@ -3544,23 +3544,23 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
   		 split(/\r|\r?\n/, $font->[$i])];
     return 1;
   }
-  
-  
+
+
   sub figify{
       my $self = shift();
       my $font = $self->{_font};
       my %opts = (-A=>'', -X=>'', -x=>'', -w=>'', -U=>0, @_);
       my @buffer;
       local $_;
-  
+
       $opts{-w} ||= 80;
-  
+
       #Prepare the input
       $opts{-X} ||= $self->{_header}->[6] ? 'R' : 'L';
       if( $opts{-X} eq 'R' ){
   	$opts{-A} = join('', reverse(split('', $opts{-A})));
       }
-  
+
       $opts{-A} =~ y/\t/ /;
       $opts{-A} =~ s%$/%\n% unless $/ eq "\n";
       if( defined($self->{-m}) && $self->{-m} == -3 ){
@@ -3587,7 +3587,7 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
           $opts{-A} = Text::Wrap::wrap('', '', $opts{-A});
   	$opts{-A} =~ tr/\0//d;
       }
-  
+
       #Assemble glyphs
       my $X = defined($self->{-m}) && $self->{-m} < 0 ? '' : "\000";
       foreach( split("\n", $opts{-A}) ){
@@ -3599,7 +3599,7 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
   	     /$Text::FIGlet::RE{bytechar}/g ){
   	push @lchars, ($opts{-U} ? UTF8ord($1) : ord($1));
         }
-  
+
         foreach my $i (-$self->{_header}->[1]..-1){
   	my $line='';
   	foreach my $lchar (@lchars){
@@ -3610,11 +3610,11 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
   	    $line .= $font->[32]->[$i] . $X;
   	  }
   	}
-  
+
   	$line =~ s/\000$//;
   	push @lines, $line;
         }
-  
+
         #Kern glyphs?
         if( !defined($self->{-m}) || $self->{-m} > -1 ){
   	for(my $nulls = 0; $nulls < scalar @lchars ; $nulls++){
@@ -3623,7 +3623,7 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
   	  for(my $i=0; $i<scalar @lines; $i++){
   	    $matches += ($temp[$i] = $lines[$i]) =~
   	      s/^([^\000]*(?:\000[^\000]*){$nulls})(?: \000|\000(?: |\Z))/$1\000/;
-  	    
+
   	    #($_ = $temp[$i]) =~ s/(${stem}{$nulls})/$1@/;
   	    #print "$nulls, $i) $matches == @{[scalar @lines]} #$_\n";
   	    if( $i == scalar(@lines)-1 && $matches == scalar @lines ){
@@ -3634,18 +3634,18 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
   	  }
   	}
         }
-  
+
         push @buffer, @lines;
       }
-  
-  
+
+
       #Layout
       $opts{-x} ||= $opts{-X} eq 'R' ? 'r' : 'l';
       foreach my $line (@buffer){
         #Smush
         if( !defined($self->{-m}) || $self->{-m} > 0 ){
-  	
-  
+
+
   	#Universal smush/overlap
   	$line =~ s/\000 //g;
   	$line =~ s/$Text::FIGlet::RE{UTFchar}\000//g;
@@ -3653,7 +3653,7 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
         else{
   	$line =~ y/\000//d;
         }
-  
+
         #Alignment
         if( $opts{-x} eq 'c' ){
   	$line = " "x(($opts{-w}-UTF8len($line))/2) . $line;
@@ -3661,12 +3661,12 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
         elsif( $opts{-x} eq 'r' ){
   	$line = " "x($opts{-w}-UTF8len($line)) . $line;
         }
-  
+
         #Replace hardblanks
         $line =~ s/$self->{_header}->[0]/ /g;
       }
-  
-  
+
+
       if( $] < 5.006 ){
   	return wantarray ? @buffer : join($/, @buffer).$/;
       }
@@ -3675,113 +3675,113 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
   	return wantarray ? map{_utf8_on($_)} @buffer :
   	    _utf8_on($_=join($/, @buffer).$/);
       }
-  
-  
+
+
   }
   1;
   __END__
   =pod
-  
+
   =head1 NAME
-  
+
   Text::FIGlet::Font - font engine for Text::FIGlet
-  
+
   =head1 SYNOPSIS
-  
+
     use Text::FIGlet;
-  
+
     my $font = Text::FIGlet->new(-f=>"doh");
-  
+
     print ~~$font->figify(-A=>"Hello World");
-  
+
   =head1 DESCRIPTION
-  
+
   B<Text::FIGlet::Font> reproduces its input as large glyphs made up of other
   characters; usually ASCII, but not necessarily. The output is similar
   to that of many banner programs--although it is not oriented sideways--and
   reminiscent of the sort of I<signatures> many people like to put at the end
   of e-mail and UseNet messages.
-  
+
   B<Text::FIGlet::Font> can print in a variety of fonts, both left-to-right and
   right-to-left, with adjacent glyphs kerned and smushed together in various
   ways. FIGlet fonts are stored in separate files, which can be identified by
   the suffix I<.flf>. Most FIGlet font files will be stored in FIGlet's default
   font directory F</usr/games/lib/figlet>. Support for TOIlet fonts I<.tlf>,
   which are typically in the same location, has also been added.
-  
+
   This implementation is known to work with perl 5.005, 5.6 and 5.8, including
   support for Unicode (UTF-8) in all three. See L</CAVEATS> for details.
-  
+
   =head1 OPTIONS
-  
+
   =head2 C<new>
-  
+
   =over
-  
+
   =item B<-d=E<gt>>F<fontdir>
-  
+
   Whence to load files.
-  
+
   Defaults to F</usr/games/lib/figlet>
-  
+
   =item B<-D=E<gt>>I<boolean>
-  
+
   B<-D> switches to the German (ISO 646-DE) character set.
   Turns I<[>, I<\> and I<]> into umlauted A, O and U, respectively.
   I<{>, I<|> and I<}> turn into the respective lower case versions of these.
   I<~> turns into s-z.
-  
+
   This option is deprecated, which means it may soon be removed from
   B<Text::FIGlet::Font>. The modern way to achieve this effect is with
   L<Text::FIGlet::Control>.
-  
+
   =item B<-U=E<gt>>I<boolean>
-  
+
   A true value, the default, is necessary to load Unicode font data;
   regardless of your version of perl
-  
+
   B<Note that you must explicitly specify I<1> if you are mapping in negative
   characters with a control file>. See L</CAVEATS> for more details.
-  
+
   =item B<-f=E<gt>>F<fontfile>
-  
+
   The font to load; defaults to F<standard>.
-  
+
   The fontfile may be zipped if L<IO::Uncompress::Unzip> is available.
   A compressed font should contain only the font itself, and the archive
   should be renamed with the B<flf> extension.
-  
+
   =item B<-m=E<gt>>I<layoutmode>
-  
+
   Specifies how B<Text::FIGlet::Font> should "smush" and kern consecutive
   glyphs together. This parameter is optional, and if not specified the
   layoutmode defined by the font author is used. Acceptable values are
   -3 through 63, where positive values are created by adding together the
   corresponding numbers for each desired smush type.
-  
-  
+
+
     SUMMARY
-    
+
     Value  Width  Old CLI  Description
      -3     +++            monospace
      -1      ++   -W       full width
       0       +   -k       kern
     undef     -   -o       overlap/universal smush
-  
+
       1       -   -S -m1   smush equal characters
       2       -   -S -m2   smush underscores
       4       -   -S -m4   smush hierarchy
       8       -   -S -m8   smush opposite pairs
      16       -   -S -m16  smush big X
      32       -   -S -m32  smush hardblanks
-  
+
      Old CLI is the figlet(6) equivalent option.
      Monospace is also available via the previous value of -0.
-  
+
   =over
-  
+
   =item I<-3>, Monospace
-  
+
   This will pad each glyph in the font such that they are all the same width.
   The padding is done such that the glyph is centered in it's "box,"
   and any odd padding is on the trailing edge.
@@ -3790,215 +3790,215 @@ $fatpacked{"Text/FIGlet/Font.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n".<
       | |          / _ \     \ \ /\ / /
       | |___      | (_) |     \ V  V /
        \____|      \___/       \_/\_/
-  
+
     |-----------+-----------+-----------| -- equal-sized boxes
-  
+
   =item I<-1>, Full width
-  
+
   No smushing or kerning, glyphs are simply concatenated together.
        ____
       / ___|   ___   __      __
      | |      / _ \  \ \ /\ / /
      | |___  | (_) |  \ V  V /
       \____|  \___/    \_/\_/
-  
+
   =item I<0>, Kern
-  
+
   Kern only i.e; glyphs are pushed together until they touch.
       ____
      / ___| ___ __      __
     | |    / _ \\ \ /\ / /
     | |___| (_) |\ V  V /
      \____|\___/  \_/\_/
-  
+
   =item I<undef>, Universal smush
-  
+
   Glyphs are kerned, then shifted so that they overlap by column of characters:
      ____
     / ___|_____      __
    | |   / _ \ \ /\ / /
    | |__| (_) \ V  V /
     \____\___/ \_/\_/
-  
+
   =back
-  
+
   Other smush modes are not yet implemented, and therefore fall back to universal.
-  
+
   =back
-  
+
   =head2 C<figify>
-  
+
   Returns a a string or list of lines, depending on context.
-  
+
   =over
-  
+
   =item B<-A=E<gt>>I<text>
-  
+
   The text to transmogrify.
-  
+
   =item B<-U=E<gt>>I<boolean>
-  
+
   Process input as Unicode (UTF-8).
-  
+
   B<Note that this applies regardless of your version of perl>,
   and is necessary if you are mapping in negative characters with a control file.
-  
+
   =item B<-X=E<gt>>I<[LR]>
-  
+
   These options control whether FIGlet prints left-to-right or right-to-left.
   I<L> selects left-to-right printing. I<R> selects right-to-left printing.
   The default is to use whatever is specified in the font file.
-  
+
   =item B<-x=E<gt>>I<[lrc]>
-  
+
   These options handle the justification of B<Text::FIGlet::Font> output.
   I<c> centers the output horizontally. I<l> makes the output flush-left.
   I<r> makes it flush-right. The default sets the justification according
   to whether left-to-right or right-to-left text is selected. Left-to-right
   text will be flush-left, while right-to-left text will be flush-right.
   (Left-to-rigt versus right-to-left text is controlled by B<-X>.)
-  
+
   =item B<-m=E<gt>>I<layoutmode>
-  
+
   Although -B<-m> is best thought of as a font instantiation option,
   it is possible to switch between layout modes greater than zero at
   figification time. Your mileage may vary.
-  
+
   =item B<-w=E<gt>>I<outputwidth>
-  
+
   The output width, output text is wrapped to this value by breaking the
   input on whitspace where possible. There are two special width values
-  
+
    -1 the text is not wrapped.
     1 the text is wrapped after every character; most useful with -m=>-3
-  
+
   Defaults to 80
-  
+
   =back
-  
+
   =head1 ENVIRONMENT
-  
+
   B<Text::FIGlet::Font> will make use of these environment variables if present
-  
+
   =over
-  
+
   =item FIGFONT
-  
+
   The default font to load. If undefined the default is F<standard.flf>.
   It should reside in the directory specified by FIGLIB.
-  
+
   =item FIGLIB
-  
+
   The default location of fonts.
   If undefined the default is F</usr/games/lib/figlet>
-  
+
   =back
-  
+
   =head1 FILES
-  
+
   FIGlet font files are available at
-  
+
     ftp://ftp.figlet.org/pub/figlet/
-  
+
   =head1 SEE ALSO
-  
+
   L<Text::FIGlet>, L<figlet(6)>
-  
+
   =head1 CAVEATS & RESTRICTIONS
-  
+
   =over
-  
+
   =item $/ is used to create the output string in scalar context
-  
+
   Consequently, make sure it is set appropriately i.e.;
   Don't mess with it, B<perl> sets it correctly for you.
-  
+
   =item B<-m=>E<gt>'-0'
-  
+
   This mode is peculiar to B<Text::FIGlet>, and as such, results will vary
   amongst fonts.
-  
+
   =item Support for pre-5.6 perl
-  
+
   This codebase was originally developed to be compatible with 5.005.03,
   and has recently been manually checked against 5.005.05. Unfortunately,
   the default test suite makes use of code that is not compatable with
   versions of perl prior to 5.6. F<t/5005-lib.pm> attempts to work around
   this to provide some basic testing of functionality.
-  
+
   =item Support for TOIlet fonts
-  
+
   Although the FIGlet font specification is not clear on the matter,
   convention dictates that there be no trailing whitespace after the
   end of line marker. Unfortunately some auto-generated TOIlet fonts
   break with this convention, while also lacking critical hardspaces.
   To fix these fonts, unzip then run C<perl -pi~ -e 's/@ $/$\@/'> on them.
-  
+
   =back
-  
+
   =head2 Unicode
-  
+
   =over
-  
+
   =item Pre-5.8
-  
+
   Perl 5.6 Unicode support was notoriously sketchy. Best efforts have
   been made to work around this, and things should work fine. If you
   have problems, favor C<"\x{...}"> over C<chr>. See also L<Text::FIGlet/NOTES>
-  
+
   =item Pre-5.6
-  
+
   Text::FIGlet B<does> provide limited support for Unicode in perl 5.005.
   It understands "literal Unicode characters" (UTF-8 sequences), and will
   emit the correct output if the loaded font supports it. It does not
   support negative character mapping at this time.
   See also L<Text::FIGlet/NOTES>
-  
+
   =item Negative character codes
-  
+
   There is limited support for negative character codes,
   at this time only characters -2 through -65_535 are supported.
-  
+
   =back
-  
+
   =head2 Memory
-  
+
   The standard font is 4Mb with no optimizations.
-  
+
   Listed below are increasingly severe means of reducing memory use when
   creating an object.
-  
+
   =over
-  
+
   =item B<-U=E<gt>-1>
-  
+
   This loads Unicode fonts, but skips negative characters. It's the default.
-  
+
   The standard font is 68kb with this optimization.
-  
+
   =item B<-U=E<gt>0>
-  
+
   This only loads ASCII characters; plus the Deutsch characters if -D is true.
-  
+
   The standard font is 14kb with this optimization.
-  
+
   =back
-  
+
   =head1 AUTHOR
-  
+
   Jerrad Pierce
-  
+
                   **                                    />>
        _         //                         _  _  _    / >>>
       (_)         **  ,adPPYba,  >< ><<<  _(_)(_)(_)  /   >>>
       | |        /** a8P_____88   ><<    (_)         >>    >>>
       | |  |~~\  /** 8PP"""""""   ><<    (_)         >>>>>>>>
      _/ |  |__/  /** "8b,   ,aa   ><<    (_)_  _  _  >>>>>>> @cpan.org
-    |__/   |     /**  `"Ybbd8"'  ><<<      (_)(_)(_) >>  
+    |__/   |     /**  `"Ybbd8"'  ><<<      (_)(_)(_) >>
                  //                                  >>>>    /
                                                       >>>>>>/
                                                        >>>>>
-  
+
   =cut
 TEXT_FIGLET_FONT
 
@@ -4011,16 +4011,16 @@ $fatpacked{"Text/FIGlet/Illuminated.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
   use Text::Wrap;
   $VERSION = 2.19;
   @ISA = 'Text::FIGlet::Font';
-  
+
   sub new{
       shift();
       bless(Text::FIGlet->new(@_));
   }
-  
+
   sub illuminate{
       my $font = shift;
       my %opts = @_;
-  
+
       my @buffer;
       if( $opts{-w} < 0 ){
   	$opts{-w} = abs($opts{-w});
@@ -4031,19 +4031,19 @@ $fatpacked{"Text/FIGlet/Illuminated.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
   	    push @buffer, _illuminate($font, %opts, -A=>$_);
   	}
       }
-  
+
       return wantarray ? @buffer : join("\n", @buffer);
   }
-  
+
   sub _illuminate{
       my $font = shift;
       my %opts = @_;
-  
+
       my $text = $opts{'-A'};
       $opts{'-A'} = substr($text, 0, 1, '');
-  
+
       my @illumination = $font->figify(%opts);
-  
+
       my $empty;
       for(my $i=0; $i<=$#illumination; $i++ ){
   	if( $illumination[$i] =~ /^\s+$/ ){
@@ -4059,44 +4059,44 @@ $fatpacked{"Text/FIGlet/Illuminated.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
   	    last; }
       }
       splice(@illumination,$empty, $#illumination-$empty);
-  
+
       $opts{-w}||=80;
       my $cols = length($illumination[0]);
       my $freecols = $opts{-w} -$cols -2;
       my $rows = scalar(@illumination);
-  
+
       $Text::Wrap::columns = $freecols;
-  
+
       my @body = split /\n/, wrap('', '', $text);
-  
+
       for(my $i=0; $i<=$#illumination; $i++ ){
   	$illumination[$i] .= '  ' . shift(@body)||'';
       }
-  
+
       if( scalar(@body) ){
   	my $body = join(' ', @body);
   	$body =~ y/\n//d;
   	$Text::Wrap::columns = $opts{-w};
   	push(@illumination, split(/\n/, wrap('', '', $body)));
       }
-  
+
       return wantarray ? @illumination : join("\n", @illumination);
   }
-  
+
   1;
   __END__
   =pod
-  
+
   =head1 NAME
-  
+
   Text::FIGlet::Illuminated - s/// 1st char of each/1st para. with ASCII art
-  
+
   =head1 SYNOPSIS
-  
+
     use Text::FIGlet::Illuminated;
-  
+
     my $illuminated = Text::FIGlet::Illuminated->new(-f=>'doh');
-  
+
     my $ipsum =<<LOREM;
     Lorem ipsum dolor sit amet, consectetur adipisicing elit,
     Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -4105,7 +4105,7 @@ $fatpacked{"Text/FIGlet/Illuminated.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
     reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
     pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
     culpa qui officia deserunt mollit anim id est laborum.
-  
+
     Sed ut perspiciatis unde omnis iste natus error sit voluptatem
     accusantium doloremque laudantium, totam rem aperiam, eaque ipsa
     quae ab illo inventore veritatis et quasi architecto beatae vitae
@@ -4121,10 +4121,10 @@ $fatpacked{"Text/FIGlet/Illuminated.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
     consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla
     pariatur?
     LOREM
-  
+
     print $illuminated->illuminate(-A=>$ipsum, -w=>-72);
     __DATA__
-    LLLLLLLLLLL               orem ipsum dolor sit amet, consectetur	
+    LLLLLLLLLLL               orem ipsum dolor sit amet, consectetur
     L:::::::::L               adipisicing elit, sed do eiusmod tempor
     L:::::::::L               incididunt ut labore et dolore magna aliqua.
     LL:::::::LL               Ut enim ad minim veniam, quis nostrud
@@ -4135,7 +4135,7 @@ $fatpacked{"Text/FIGlet/Illuminated.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
       L:::::L                 Excepteur sint occaecat cupidatat non
       L:::::L                 proident, sunt in culpa qui officia deserunt
       L:::::L                 mollit anim id est laborum.
-      L:::::L         LLLLLL  	
+      L:::::L         LLLLLL
     LL:::::::LLLLLLLLL:::::L  Sed ut perspiciatis unde omnis iste natus
     L::::::::::::::::::::::L  error sit voluptatem accusantium doloremque
     L::::::::::::::::::::::L  laudantium, totam rem aperiam, eaque ipsa
@@ -4151,69 +4151,69 @@ $fatpacked{"Text/FIGlet/Illuminated.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
     autem vel eum iure reprehenderit qui in ea voluptate velit esse quam
     nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo
     voluptas nulla pariatur?
-  
+
   =head1 DESCRIPTION
-  
+
   Illumination replaces the first character a paragraph with the
   corresponding figchar from the specified font. The remaining text
   is then wrapped around the figchar, reminiscent of illuminated
   texts, some magazines, or the CSS :first-letter pseudo-element.
-  
+
   =head1 OPTIONS
-  
+
   =head2 C<new>
-  
+
   Loads the specified font.
-  
+
   Default options are inherited from L<Text::FIGlet>.
-  
+
   =head2 C<illuminate>
-  
+
   Default options are inherited from L<Text::FIGlet::Font>.
-  
+
   Pass a negative width if you would like only the first paragraph of the
   input to be illuminated, otherwise each paragraph will be illuminated.
-  
+
   =head1 ENVIRONMENT
-  
+
   B<Text::FIGlet::Illuminated>
   will make use of these environment variables if present
-  
+
   =over
-  
+
   =item FIGFONT
-  
+
   The default font to load. If undefined the default is F<standard.flf>.
   It should reside in the directory specified by FIGLIB.
-  
+
   =item FIGLIB
-  
+
   The default location of fonts.
   If undefined the default is F</usr/games/lib/figlet>
-  
+
   =back
-  
+
   =head1 CAVEATS & RESTRICTIONS
-  
+
   Kerning and smushing modes make little sense with B<Illuminated>.
-  
+
   =over
-  
+
   =item $/ is used to separate the input
-  
+
   Consequently, make sure it is set appropriately i.e;
   Don't mess with it, B<perl> sets it correctly for you.
-  
+
   =back
-  
+
   =head1 SEE ALSO
-  
+
   L<Text::FIGlet::Font>, L<Text::FIGlet::Ransom>, L<Text::FIGlet>, L<figlet(6)>
-  
+
   =head1 AUTHOR
-  
+
   Jerrad Pierce
-  
+
                   **                                    />>
        _         //                         _  _  _    / >>>
       (_)         **  ,adPPYba,  >< ><<<  _(_)(_)(_)  /   >>>
@@ -4224,7 +4224,7 @@ $fatpacked{"Text/FIGlet/Illuminated.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."
                  //                                  >>>>    /
                                                       >>>>>>/
                                                        >>>>>
-  
+
   =cut
 TEXT_FIGLET_ILLUMINATED
 
@@ -4236,17 +4236,17 @@ $fatpacked{"Text/FIGlet/Ransom.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
   use Carp 'croak';
   $VERSION = 2.17;
   @ISA = 'Text::FIGlet::Font';
-  
+
   #Roll our own for 5.005, and remove somewhat heavy List::Util dependency
   sub max{ (sort @_)[-1]; }
   sub sum{ my $cnt; $cnt += $_ foreach @_; return $cnt}
-  
+
   sub new{
     shift();
     my $self = {-U=>0, -v=>'center', -m=>-1, @_};
     my(@fonts, %fonts);
-  
-  
+
+
     if( ref($self->{-f}) eq 'HASH' ){
       croak "No default specified" unless defined($self->{-f}->{undef});
       croak "Insufficient number of fonts, 2 or more please" unless keys(%{$self->{-f}}) > 1;
@@ -4256,16 +4256,16 @@ $fatpacked{"Text/FIGlet/Ransom.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
       croak "Insufficient number of fonts, 2 or more please" unless scalar(@{$self->{-f}}) > 1;
       $self->{_fonts} = $self->{-f};
     }
-  
-  
+
+
     #Load the fonts
     my $x =0;
     foreach my $font ( @{$self->{_fonts}} ){
         push(@fonts, Text::FIGlet::Font->new(%$self, -f=>$font));
         $fonts{$font} = $x++;
     }
-  
-  
+
+
     #Synthesize a header
     #Hardblank = DEL
     $self->{_header}->[0] = "\x7F";
@@ -4280,13 +4280,13 @@ $fatpacked{"Text/FIGlet/Ransom.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
     #Comment line count, calculated when dumping @_ ... include chr to font mapping?
     #R2L = false
     $self->{_header}->[6] = 0;
-  
+
     if( $self->{-v} eq 'base' ){
       my $descender = max( map {$_->{_header}->[1] - $_->{_header}->[2]} @fonts );
       $self->{_header}->[1] = $self->{_header}->[2] + $descender;
     }
-  
-  
+
+
     #Assemble the body
     for(my $i=32; $i<127; $i++ ){
       my($c, $R);
@@ -4306,14 +4306,14 @@ $fatpacked{"Text/FIGlet/Ransom.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
         $c = $fonts[$R]->{_font}->[$i];
         $self->{_map}->[$R] .= chr($i);
       }
-  
+
       #Vertical-alignment & padding
       if( my $delta = $self->{_header}->[1] - $fonts[$R]->{_header}->[1] ){
         #Parens around qw for 5.005
         local($self->{-v}) = (qw/top center center bottom/)[rand(4)]
   	if $self->{-v} eq 'random';
-  
-  
+
+
         my $ws = $self->{-m} == 0 ? $c->[0] : sum(@$c[0,1,2]);
         if( $self->{-v} eq 'top' ){
   	push(@$c, (' 'x$ws)x$delta);
@@ -4334,27 +4334,27 @@ $fatpacked{"Text/FIGlet/Ransom.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
   	push(@$c, (' 'x$ws)x$b) if $b;
         }
       }
-  
-  
+
+
       #XXX -m... freeze/thaw? horizontally center w/ padding -height..-1
-  
+
       #Common hardblank
       my $iHard=$fonts[$R]->{_header}->[0];
       foreach my $j(-$self->{_header}->[1]..-1){
         $c->[$j]=~ s/$iHard/$self->{_header}->[0]/g;
         #$c->[$j].= Text::FIGlet::UTF8len($c->[$j]);
       }
-  
+
       $self->{_font}->[$i] = $c;
     }
-  
+
     bless($self);
   }
-  
+
   sub freeze{
       my $self = shift;
       my $font;
-  
+
       foreach my $opt ( sort grep {/^-/} keys %{$self} ){
   	my $val = $self->{$opt};
   	if( ref($val) eq 'ARRAY' ){
@@ -4372,9 +4372,9 @@ $fatpacked{"Text/FIGlet/Ransom.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
   	$font .= sprintf "#%s => %s\n", $opt, $val;
   	$self->{_header}->[5]++;
       }
-  
+
       $font = sprintf("flf2a%s %s %s %s %s %s %s\n", @{$self->{_header}}). $font;
-  
+
       for(my $i=32; $i<= scalar @{$self->{_font}}; $i++ ){
   	my $c = $self->{_font}->[$i];
   	foreach my $j(-$self->{_header}->[1]..-1){
@@ -4383,23 +4383,23 @@ $fatpacked{"Text/FIGlet/Ransom.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
       }
       return $font;
   }
-  
+
   1;
   __END__
   =pod
-  
+
   =head1 NAME
-  
+
   Text::FIGlet::Ransom - blended/composite font support for Text:FIGlet
-  
+
   =head1 SYNOPSIS
-  
+
     use Text::FIGlet;
-  
+
     my $ransom = Text::FIGlet->new(-f=>[ qw/big block banner/ ]);
-  
+
     print $ransom->figify("Hi mom");
-  
+
                _
     _|    _|  (_) #    #        #    #
     _|    _|   _  ##  ##   ___  ##  ##
@@ -4407,164 +4407,164 @@ $fatpacked{"Text/FIGlet/Ransom.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
     _|    _|  | | #    # | (_) |#    #
     _|    _|  |_| #    #  \___/ #    #
                   #    #        #    #
-  
+
   =head1 DESCRIPTION
-  
+
   This class creates a new FIGlet font using glyphs from user-specified fonts.
   Output from the resulting hybrid font is suitable for basic textual CAPTCHA,
   but also has artistic merit. As the output is automatically generated though,
   some manual adjustment may be necessary; particularly since B<Text::FIGlet>
   still does not support smushing.
-  
+
   =head2 TODO
-  
+
   =over
-  
+
   =item Treat 0x20 specially?
-  
+
   =item Unicode support...
-  
+
   =back
-  
+
   =head1 OPTIONS
-  
+
   =head2 C<new>
-  
+
   Loads the specified set of fonts, and assembles glyphs from them to create
   the new font.
-  
+
   Except where otherwise noted below, options are inherited from
   L<Text::FIGlet::Font>.
-  
+
   =over
-  
+
   =item B<-f=E<gt>>I<\@fonts> | I<\%fonts>
-  
+
   The array reference form accepts a reference to a list of fonts to use
   in constructing the new font. When the object is instantiated B<Ransom>
   iterates over all of the codepoints, randomly copying the glyph for that
   index from one of the specified fonts.
-  
+
   The hash form accepts a reference to a hash with fonts as keys, and
   regular expressions as values. If a character matches the supplied regular
   expression, the glyph for that character is copied from the corresponding
   font. In addition, a default font to pull glyphs from B<must be included>,
   but it is specified in reverse, with a I<key> of C<undef> and the font as
   the I<value>.
-  
+
     Text::FIGlet->new(-f=>{block=E<gt>qr/[ A-Z]/, undef=>'lean'})
-  
+
     _|_|_|_|_|                          __
         _|         _____  ____  ____   / /
         _|        / ___/ / __ \/_  /  / /
         _|       / /    / /_/ / / /_ /_/
         _|      /_/     \____/ /___/(_)
-  
-  
+
+
   In the text above, I<font> means any value accepted by the B<-f> parameter
   of C<Text::FIGlet::new>.
-  
+
   In either form, an error occurs if less than 2 fonts are given.
-  
+
   =item B<-U=E<gt>>I<boolean>
-  
+
   Not yet implemented.
-  
+
   A true value is necessary to load Unicode font data,
   regardless of your version of perl. B<The default is false>.
-  
+
   B<Note that you must explicitly specify I<1> if you are mapping in negative
   characters with a control file>. Otherwise, I<-1> is more appropriate.
   See L<Text::FIGlet::Font/CAVEATS> for more details.
-  
+
   =item B<-v>=E<gt>'I<vertical-align>'
-  
+
   Because fonts vary in size, it is necessary to provide vertical padding
   around smaller glyphs, and this option controls how the padding is added.
   The default is to S<center> the glyphs.
-  
+
   =over
-  
+
   =item I<top>
-  
+
   Align the tops of the glyphs
-  
+
   =item I<center>
-  
+
   Align the center of the glyphs
-  
+
   =item I<baseline>
-  
+
   Align the the base of the glyphs i.e; align characters such as "q" and "p"
   as if they had no descenders, thusly having their loops in line with "o".
-  
+
   =item I<bottom>
-  
+
   Align the bottom of the glyphs
-  
+
   =item I<random>
-  
+
   Randomly select an alignment for each character when assembling the font.
-  
+
   For code simplicity I<baseline> is not one of the random alignments used,
   and instead I<center> is twice as likely for an overall distribution of
   25% I<top>, 50% I<center> and 25% I<bottom>.
-  
+
   =back
-  
+
   =back
-  
+
   =head2 C<figify>
-  
+
   Inherited from L<Text::FIGlet::Font>.
-  
+
   =head2 C<freeze>
-  
+
   Returns a string containing the current font. This allows for the preservation
   of the current (random) font for reuse, and to avoid the performance penalty
   incurred upon B<Ransom>-ization.
-  
+
   To cope with the vagaries of input font formatting, a frozen B<Ransom> font has
   hardblank & endmark characters converted to DEL (x7F) and US (x1F) respectively.
-  
+
   The frozen font also includes as comments the parameters used to create it.
   The comments for random ARRAYREF fonts, a map of which characters are pulled
   from which source font.
-  
+
   =head1 ENVIRONMENT
-  
+
   B<Text::FIGlet::Ransom>
   will make use of these environment variables if present
-  
+
   =over
-  
+
   =item FIGLIB
-  
+
   The default location of fonts.
   If undefined the default is F</usr/games/lib/figlet>
-  
+
   =back
-  
+
   =head1 CAVEATS
-  
+
   B<Ransom> does not work well with B<-m> modes other than I<-1> & I<0> at this time.
-  
+
   As noted above, though it is easy to overlook, B<Ransom> only supports ASCII input.
-  
+
   Very few so-called "monospace" display fonts are fixed-width across all
   codepoints, and the results of mixing FIGlet and TOIlet fonts may be
   mangled in such a font. Some true monspace fonts include Bitstream Monospace
   and GNU FreeFont FreeMono. OCR A Std and OCR B MT also work at 9, 11 and 12
   points, but not 10.
-  
+
   =head1 SEE ALSO
-  
+
   L<Text::FIGlet::Font>, L<Text::FIGlet>, L<figlet(6)>
-  
+
   =head1 AUTHOR
-  
+
   Jerrad Pierce
-  
+
                   **                                    />>
        _         //                         _  _  _    / >>>
       (_)         **  ,adPPYba,  >< ><<<  _(_)(_)(_)  /   >>>
@@ -4575,7 +4575,7 @@ $fatpacked{"Text/FIGlet/Ransom.pm"} = '#line '.(1+__LINE__).' "'.__FILE__."\"\n"
                  //                                  >>>>    /
                                                       >>>>>>/
                                                        >>>>>
-  
+
   =cut
 TEXT_FIGLET_RANSOM
 
@@ -4638,5 +4638,4 @@ sub fig ( $text ) {
     usleep 603_960; # *cough* erm, the 4 is gone because screen drawing takes time?
 }
 
-fig $_ for io("$FindBin::Bin/../2222.txt")->chomp->getlines;
-
+fig $_ for io("$FindBin::Bin/2222.txt")->chomp->getlines;
