@@ -6,7 +6,7 @@ for people who like to be silly
 
 and know a tiny bit of programming.
 
-[![Watch the video](https://img.youtube.com/vi/ZstE5y6nKSU/hqdefault.jpg)](https://www.youtube.com/embed/ZstE5y6nKSU)
+[![Watch the video](https://img.youtube.com/vi/ZstE5y6nKSU/hqdefault.jpg)](https://www.youtube.com/ZstE5y6nKSU)
 
 
 ### How to play
