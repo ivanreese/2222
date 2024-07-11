@@ -27,7 +27,7 @@ done
 ```
 
 #### AppleScript alerts 🚨
-Note that to stop this one, you've gotta tab over, then hit `control-c`
+Note that to stop this one, you've gotta tab back to the terminal, then hit `control-c`
 
 ```bash
 cat 2222.txt | while read line; do
