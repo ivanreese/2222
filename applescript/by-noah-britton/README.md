@@ -21,17 +21,17 @@ Note that the notifications can't quite keep up with the time, and any queued no
 
 ```bash
 cat 2222.txt | while read line; do
-  osascript -e "display notification \"2222\" with title \"$line\""; fi
+  osascript -e "display notification \"2222\" with title \"$line\"";
   sleep 0.6039604;
 done
 ```
 
 #### AppleScript alerts 🚨
-Note that to stop this one, you've gotta close one of the popups and then quickly hit `control-c`
+Note that to stop this one, you've gotta tab over, then hit `control-c`
 
 ```bash
 cat 2222.txt | while read line; do
-  osascript -e "display alert \"$line\""; fi
+  osascript -e "display alert \"$line\"";
   sleep 0.6039604;
 done
 ```
