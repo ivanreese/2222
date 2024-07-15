@@ -1,4 +1,4 @@
-# 2222 in Bash
+# 2222 in C
 
 Contributed by Artëm Chistyakov ([@temochka@jawns.club](https://jawns.club/@temochka))
 
