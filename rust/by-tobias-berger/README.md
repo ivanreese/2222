@@ -2,4 +2,8 @@
 
 Contributed by Tobias Berger ([Toby222](https://github.com/Toby222))
 
-Instructions coming as soon as I figure them out :)
+To run:
+
+* install rustc
+* run `rustc 2222.rs`
+* run the generated executable file
