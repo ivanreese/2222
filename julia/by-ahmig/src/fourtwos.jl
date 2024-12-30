@@ -2,9 +2,24 @@ module fourtwos
 
 using Random
 
-const SLEEP::Float64 = 0.6039604
+function parse_time(time_str::String)::Float64
+    time::Vector{String} = split(split(time_str, "=")[2], ":")
+    minutes::String = get(time, 1, "0")
+    seconds::String = get(time, 2, "0")
+    parse(Float64, minutes) * 60 + parse(Float64, seconds)
+end
 
-function read_words(shuffle::Bool)
+function parse_sleep_arg()::Float64
+    time::Float64 = 22*60 + 22
+    for arg in ARGS
+        if startswith(arg, "time=")
+            time = parse_time(arg)
+        end
+    end
+    time / 2222
+end
+
+function read_words(shuffle::Bool)::Vector{String}
     words = readlines("2222.txt")
     if shuffle
         shuffle!(words)
@@ -13,8 +28,9 @@ function read_words(shuffle::Bool)
 end
 
 function run()
-    wait_word() = if "manual" in ARGS readline() else sleep(SLEEP) end
-    for word in read_words("shuffle" in ARGS)
+    sleep_time::Float64 = parse_sleep_arg()
+    wait_word() = if "manual" in ARGS readline() else sleep(sleep_time) end
+    for (i, word) in enumerate(read_words("shuffle" in ARGS))
         println(word)
         wait_word()
     end
