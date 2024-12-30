@@ -30,8 +30,9 @@ end
 function run()
     sleep_time::Float64 = parse_sleep_arg()
     wait_word() = if "manual" in ARGS readline() else sleep(sleep_time) end
-    for (i, word) in enumerate(read_words("shuffle" in ARGS))
-        println(word)
+    print_word(iword) = if "numbered" in ARGS println("[$(iword[1])] $(iword[2])") else println(iword[2]) end
+    for iword in enumerate(read_words("shuffle" in ARGS))
+        print_word(iword)
         wait_word()
     end
 end
