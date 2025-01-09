@@ -29,7 +29,7 @@ Your program should:
 
 ---
 
-You can spend as long as you like implementing the game, but I suggest speedrunning this part! Just make it work, be sloppy, be slippy, be silly. Pick a language you always wanted to try. Try it in several, and compare. Hell, do it in eToys, or AgentSheets, or modal.
+You can spend as long as you like implementing the game, but I suggest speedrunning this part! Just make it work, be sloppy, be slippy, be silly. Pick a language you always wanted to try. Try it in several, and compare. Hell, do it in Lua, or D, or SNOBOL.
 
 Once the game is implemented, it'll take roughly 22 minutes and 22 seconds to play. If you play the whole way through, it'll feel _totally bizarre_. In a good way. You've probably never done anything quite like this before.
 
@@ -72,10 +72,14 @@ Lots of other variations are possible — go nuts.
 
 ## Watch someone else play
 
-But, like… spoilers. I suggest giving it a try for yourself first.
+There have been two live streams of this game. (If you live stream or record yourself playing, add it here!)
 
-[![Watch the video](https://img.youtube.com/vi/ZstE5y6nKSU/sddefault.jpg)](https://www.youtube.com/watch?v=ZstE5y6nKSU)
+#### The first ever live stream — 2222 in Scratch by Ivan Reese
+[![Ivan](https://img.youtube.com/vi/ZstE5y6nKSU/sddefault.jpg)](https://www.youtube.com/watch?v=ZstE5y6nKSU)
+
+#### The second ever live stream — 2222 in SpaceTode & Dreamberd by TodePond
+[![Tode](https://img.youtube.com/vi/Zgq64ONM_5U/sddefault.jpg)](https://www.youtube.com/watch?v=Zgq64ONM_5U)
 
 ---
 
-**Good luck, have fun!**
+**GOOD LUCK, HAVE FUNS**
