@@ -1,0 +1,82 @@
+[gd_scene load_steps=4 format=3 uid="uid://cd1tiofigam5d"]
+
+[ext_resource type="Script" path="res://2222_scene.gd" id="1_8h2ih"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_qky4o"]
+font_size = 92
+
+[sub_resource type="LabelSettings" id="LabelSettings_fsyqq"]
+font_size = 20
+font_color = Color(0.627451, 0.627451, 0.627451, 1)
+
+[node name="2222Scene" type="Control"]
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+grow_horizontal = 2
+script = ExtResource("1_8h2ih")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -104.0
+offset_right = 192.0
+offset_bottom = 126.0
+grow_horizontal = 2
+text = "2222"
+label_settings = SubResource("LabelSettings_qky4o")
+vertical_alignment = 1
+
+[node name="NextWordTimer" type="Timer" parent="."]
+wait_time = 0.604
+
+[node name="GoButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = 248.0
+offset_right = 80.0
+offset_bottom = 304.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+text = "Timer Mode"
+
+[node name="TextEdit" type="TextEdit" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -64.0
+offset_top = 128.0
+offset_right = 64.0
+offset_bottom = 224.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+placeholder_text = "type here"
+
+[node name="MistakesLabel" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -56.0
+offset_top = 224.0
+offset_right = 56.0
+offset_bottom = 283.0
+grow_horizontal = 2
+text = "Mistakes:
+1"
+label_settings = SubResource("LabelSettings_fsyqq")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="timeout" from="NextWordTimer" to="." method="_on_next_word_timer_timeout"]
+[connection signal="pressed" from="GoButton" to="." method="_on_go_button_pressed"]
+[connection signal="focus_entered" from="TextEdit" to="." method="_on_text_edit_focus_entered"]
+[connection signal="text_changed" from="TextEdit" to="." method="_on_text_edit_text_changed"]
