@@ -1,0 +1,99 @@
+[gd_scene format=3 uid="uid://ch78brd6oceaw"]
+
+[ext_resource type="Script" uid="uid://bu4rr13y4dah7" path="res://2222.gd" id="1_2h1pa"]
+
+[sub_resource type="Environment" id="Environment_2h1pa"]
+background_mode = 1
+background_color = Color(0.4, 0.212, 0.24333338, 1)
+ambient_light_color = Color(0.39215687, 0.39215687, 0.9098039, 1)
+glow_enabled = true
+glow_strength = 1.72
+
+[node name="Main_tscn" type="Node2D" unique_id=2029927452]
+
+[node name="Label3D" type="Label3D" parent="." unique_id=208972984]
+pixel_size = 0.001
+modulate = Color(2.417694, 0.88289404, 2.816535, 1)
+outline_modulate = Color(0.7193482, 0.001060667, 0.8212404, 1)
+text = "START"
+font_size = 160
+outline_size = 100
+script = ExtResource("1_2h1pa")
+
+[node name="Label3D2" type="Label3D" parent="." unique_id=528190878]
+transform = Transform3D(0.8681642, 0, -0.49627712, 0, 1, 0, 0.49627712, 0, 0.8681642, 0.25026253, 0.18181287, -0.32954395)
+pixel_size = 0.001
+modulate = Color(0.7602394, 0.361702, 0.41390347, 1)
+outline_modulate = Color(1.1358725, 0.32557026, 1.2742168, 1)
+text = "START"
+font_size = 160
+script = ExtResource("1_2h1pa")
+
+[node name="Label3D3" type="Label3D" parent="." unique_id=1828317095]
+transform = Transform3D(0.7009595, -0.3211463, 0.6368052, 0.4165188, 0.9091271, 0, -0.5789369, 0.26524132, 0.77102476, -0.3703902, -0.31247064, -0.1461159)
+pixel_size = 0.001
+modulate = Color(0.99999994, 0.25022823, 0.1317944, 1)
+outline_modulate = Color(0.85420007, 0.7063681, 0.17777006, 1)
+text = "START"
+font_size = 160
+script = ExtResource("1_2h1pa")
+
+[node name="Label3D5" type="Label3D" parent="." unique_id=2086359781]
+transform = Transform3D(0.8236118, 0, 0.567154, 0, 1, 0, -0.567154, 0, 0.8236118, -1.25091, 0.4473259, -0.87693)
+pixel_size = 0.001
+modulate = Color(0.44429585, 0.33232817, 0.7290044, 1)
+outline_modulate = Color(1.1358725, 0.32557026, 1.2742168, 1)
+text = "START"
+font_size = 160
+script = ExtResource("1_2h1pa")
+
+[node name="Label3D4" type="Label3D" parent="." unique_id=2021299290]
+transform = Transform3D(0.6342314, -0.7731433, 0, 0.7731433, 0.6342314, 0, 0, 0, 1, 0.42455202, -0.26500773, -0.34467185)
+pixel_size = 0.001
+modulate = Color(0.6175412, 0.7304586, 0.84687716, 1)
+outline_modulate = Color(1.1358725, 0.32557026, 1.2742168, 1)
+text = "START"
+font_size = 160
+script = ExtResource("1_2h1pa")
+
+[node name="Label3D6" type="Label3D" parent="." unique_id=1272217526]
+transform = Transform3D(0.8681642, 0, -0.49627712, 0, 1, 0, 0.49627712, 0, 0.8681642, 0.32260022, 0.18181287, -2.1432004)
+pixel_size = 0.001
+modulate = Color(0.7602394, 0.361702, 0.41390347, 1)
+outline_modulate = Color(1.1358725, 0.32557026, 1.2742168, 1)
+text = "START"
+font_size = 160
+script = ExtResource("1_2h1pa")
+
+[node name="Label3D7" type="Label3D" parent="." unique_id=107901412]
+transform = Transform3D(0.7009595, -0.3211463, 0.6368052, 0.4165188, 0.9091271, 0, -0.5789369, 0.26524132, 0.77102476, -0.29805252, -0.31247064, -1.9597725)
+pixel_size = 0.001
+modulate = Color(0.99999994, 0.25022823, 0.1317944, 1)
+outline_modulate = Color(0.85420007, 0.7063681, 0.17777006, 1)
+text = "START"
+font_size = 160
+script = ExtResource("1_2h1pa")
+
+[node name="Label3D8" type="Label3D" parent="." unique_id=657130609]
+transform = Transform3D(0.8236118, 0, 0.567154, 0, 1, 0, -0.567154, 0, 0.8236118, -1.1785724, 0.4473259, -2.6905866)
+pixel_size = 0.001
+modulate = Color(0.44429585, 0.33232817, 0.7290044, 1)
+outline_modulate = Color(1.1358725, 0.32557026, 1.2742168, 1)
+text = "START"
+font_size = 160
+script = ExtResource("1_2h1pa")
+
+[node name="Label3D9" type="Label3D" parent="." unique_id=105365960]
+transform = Transform3D(0.6342314, -0.7731433, 0, 0.7731433, 0.6342314, 0, 0, 0, 1, 0.4968897, -0.26500773, -2.1583285)
+pixel_size = 0.001
+modulate = Color(0.6175412, 0.7304586, 0.84687716, 1)
+outline_modulate = Color(1.1358725, 0.32557026, 1.2742168, 1)
+text = "START"
+font_size = 160
+script = ExtResource("1_2h1pa")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=525002921]
+transform = Transform3D(0.9753886, 0, 0.22049317, 0.0037057688, 0.9998588, -0.016393093, -0.22046202, 0.016806731, 0.9752508, 0.098150104, 0, 0.21067816)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=289562526]
+environment = SubResource("Environment_2h1pa")

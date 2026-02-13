@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://dya03cu1d3b4u"]
+
+[ext_resource type="Script" uid="uid://ds6uk6n3kxfc6" path="res://main.gd" id="1_ig7tw"]
+
+[node name="Node2D" type="Control" unique_id=1464140493]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_ig7tw")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="." unique_id=177307504]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 1140.0
+offset_bottom = 636.0
+theme_override_font_sizes/normal_font_size = 72
