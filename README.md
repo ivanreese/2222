@@ -2,7 +2,7 @@
 
 <br><br>
 
-"Two Twenty-Two Two" is a game 🎲
+"Two Two Two Two" is a game 🎲
 
 for people 🫣 who like to be silly
 
@@ -20,7 +20,7 @@ Your program should:
 
 #### 1️⃣ Load a list of 2222 words.
 
-* You can use the file `2222.txt` in this repo, or make your own list — but it needs to be exactly `2222` real words.
+* You can use the file `2222.txt` in this repo, or make your own list — but it needs to be exactly `2222` real words.
 * `2222.txt` is four-letter words. It does have a few cuss words that are fun to say. It only has words that are fun, no bummers.
 
 <br>
@@ -66,11 +66,11 @@ That's the most important rule of all.
 Here are some suggested ways to share:
 
 * Submit your implementation to me, so I can add it to this repo!
-  * You can make a PR, open an issue, message me on [Mastodon](https://mastodon.social/@spiralganglion), find me at SPLASH con in October and hand me a CD-R, or whatever.
+  * You can make a PR, open an issue, message me on [Mastodon](https://merveilles.town/@spiralganglion), whatever!
 
 * Record or live-stream yourself playing the game!
   * One extra rule in this case: the viewer needs to be able to see your code.
-  * Send me a link to your stream/video! (PR, issue, [Masto](https://mastodon.social/@spiralganglion), whatever)
+  * Send me a link to your stream/video! (PR, issue, [Masto](https://merveilles.town/@spiralganglion), whatever)
 
 <br><br>
 
@@ -85,8 +85,8 @@ Variations are encouraged! For instance, here's what I call the **speedrun** var
 
 With these rules, scoring works as follows:
 
-* Any% — Try to get as far as you can without messing up. Your score is how many words you said before you messed up. Higher score is better.
-* 100% — If you get all the way to the end without messing up, your score is your time. Lower is better. This is the ultimate game mode for true sickos. 💚
+* Any% — Try to get as far as you can without messing up. Your score is how many words you said before you messed up. Higher score is better.
+* 100% — If you get all the way to the end without messing up, your score is your time. Lower is better. This is the ultimate game mode for true sickos. 🤍
 
 Lots of other variations are possible — go nuts.
 
@@ -103,7 +103,7 @@ There have been two live streams of this game. (If you live stream or record you
 
 <br>
 
-#### The second ever live stream — 2222 in SpaceTode & Dreamberd by TodePond
+#### The second ever live stream — 2222 in SpaceTode & Dreamberd by TodePond
 [![Tode](https://img.youtube.com/vi/Zgq64ONM_5U/sddefault.jpg)](https://www.youtube.com/watch?v=Zgq64ONM_5U)
 
 <br>
@@ -112,4 +112,4 @@ There have been two live streams of this game. (If you live stream or record you
 
 <br>
 
-**GOOD LUCK, HAVE FUNS**
+**BEST LUCK, HAVE GOOD TIME**
