@@ -1,0 +1,35 @@
+||:: how do I play 2222
+
+|:: how do I play 2222?|
+    :: display a word
+    :: sleep for 604 milliseconds
+
+|:: display a word|
+    :: clear the screen
+    :: make the cursor invisible
+    :: print a word
+
+|:: sleep for $some $time|
+    :@time: sleep $some $time
+
+|:: clear the screen|
+    :: print :string: "\ESC[2J\ESC[H"
+
+|:: make the cursor invisible|
+    :: print :string: "\ESC[?25l"
+
+|:: print a word|
+    :: skip whitespace
+    :: print four characters
+
+|:: skip whitespace? :words: ' '|
+|:: skip whitespace? :words: 10|
+|:: skip whitespace? :words: 9|
+|:: skip whitespace|
+
+|:: print four characters :words: ($1 $2 $3 $4)|
+    :: print :string: ($1 $2 $3 $4)
+
+|:: print? :string: '\ESC'| :string: 27
+|:: print? :string: $     | :@stdio: write $
+|:: print                 |
